@@ -120,13 +120,40 @@ const selectStyle: CSSProperties = {
   transition: 'all 0.2s',
 };
 
+type ReportRange = 'today' | 'yesterday' | 'week' | 'month' | 'custom';
+
+const rangeLabelMap: Record<ReportRange, string> = {
+  today: 'Hoy',
+  yesterday: 'Ayer',
+  week: 'Esta Semana',
+  month: 'Este Mes',
+  custom: 'Personalizado',
+};
+
 interface MileageReportProps {
   onClose: () => void;
 }
 
+function getStartOfWeek(d: Date): Date {
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+  date.setDate(date.getDate() - diff);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function getStartOfMonth(d: Date): Date {
+  const date = new Date(d.getFullYear(), d.getMonth(), 1);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
 export function MileageReport({ onClose }: MileageReportProps) {
   const { data: devices = [] } = useDevices();
-  const [range, setRange] = useState<'today' | 'yesterday' | 'week'>('today');
+  const [range, setRange] = useState<ReportRange>('today');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
 
   const reportParams = useMemo(() => {
     if (devices.length === 0) return null;
@@ -140,11 +167,20 @@ export function MileageReport({ onClose }: MileageReportProps) {
         to.setDate(to.getDate() - 1); to.setHours(23, 59, 59, 999);
         break;
       case 'week':
-        from.setDate(from.getDate() - 7); from.setHours(0, 0, 0, 0);
+        from.setTime(getStartOfWeek(from).getTime());
         break;
+      case 'month':
+        from.setTime(getStartOfMonth(from).getTime());
+        break;
+      case 'custom': {
+        if (!customFrom || !customTo) return null;
+        from.setTime(new Date(customFrom).getTime()); from.setHours(0, 0, 0, 0);
+        to.setTime(new Date(customTo).getTime()); to.setHours(23, 59, 59, 999);
+        break;
+      }
     }
     return { deviceId: devices.map((d) => d.id!), from: from.toISOString(), to: to.toISOString() };
-  }, [devices, range]);
+  }, [devices, range, customFrom, customTo]);
 
   const { data: reportData = [], isLoading, isError, refetch } = useSummaryReport(reportParams);
   const deviceMap = useMemo(() => new Map(devices.map(d => [d.id, d])), [devices]);
@@ -188,7 +224,7 @@ export function MileageReport({ onClose }: MileageReportProps) {
                 Resumen de Actividad
               </h2>
               <p style={{ margin: '0.125rem 0 0', fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
-                Control de Kilometraje Consolidado • {range === 'today' ? 'Hoy' : range === 'yesterday' ? 'Ayer' : 'Últimos 7 días'}
+                Control de Kilometraje Consolidado • {rangeLabelMap[range]}
               </p>
             </div>
           </div>
@@ -214,10 +250,29 @@ export function MileageReport({ onClose }: MileageReportProps) {
                   >
                       <option value="today">Reporte de Hoy</option>
                       <option value="yesterday">Actividad de Ayer</option>
-                      <option value="week">Última Semana</option>
+                      <option value="week">Esta Semana</option>
+                      <option value="month">Este Mes</option>
+                      <option value="custom">Personalizado</option>
                   </select>
                   <IconChevronDown size={14} style={{ position: 'absolute', right: '1rem', color: '#94a3b8', pointerEvents: 'none' }} />
               </div>
+              {range === 'custom' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="date"
+                    value={customFrom}
+                    onChange={(e) => setCustomFrom(e.target.value)}
+                    style={selectStyle}
+                  />
+                  <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 700 }}>→</span>
+                  <input
+                    type="date"
+                    value={customTo}
+                    onChange={(e) => setCustomTo(e.target.value)}
+                    style={selectStyle}
+                  />
+                </div>
+              )}
             </div>
             <button
               onClick={handleExportXLSX}
