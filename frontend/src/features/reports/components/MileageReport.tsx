@@ -124,12 +124,6 @@ interface MileageReportProps {
   onClose: () => void;
 }
 
-const rangeLabels: Record<string, string> = {
-  today: 'Hoy',
-  yesterday: 'Ayer',
-  week: 'Última Semana',
-};
-
 export function MileageReport({ onClose }: MileageReportProps) {
   const { data: devices = [] } = useDevices();
   const [range, setRange] = useState<'today' | 'yesterday' | 'week'>('today');
@@ -279,7 +273,7 @@ export function MileageReport({ onClose }: MileageReportProps) {
                               <span>TID: {device?.uniqueId}</span>
                               {(device?.attributes as Record<string, string>)?.plate && (
                                 <span style={{ padding: '0.1rem 0.4rem', borderRadius: '0.25rem', backgroundColor: 'rgba(15, 23, 42, 0.06)', fontWeight: 700, letterSpacing: '0.02em' }}>
-                                  {(device.attributes as Record<string, string>).plate}
+                                  {(device!.attributes as Record<string, string>).plate}
                                 </span>
                               )}
                             </div>
