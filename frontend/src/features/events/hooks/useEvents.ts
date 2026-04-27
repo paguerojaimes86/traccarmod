@@ -64,7 +64,7 @@ export function useEvents() {
     if (!polledEvents || polledEvents.length === 0) return;
 
     const filtered = (polledEvents as EventMessage[]).filter(
-      (e) => activeEventTypes.size === 0 || activeEventTypes.has(e.type)
+      (e) => activeEventTypes.size > 0 && activeEventTypes.has(e.type)
     );
     if (filtered.length === 0) return;
 
@@ -79,7 +79,7 @@ export function useEvents() {
   // WebSocket: real-time events
   const handleEvents = useCallback((events: EventMessage[]) => {
     const filtered = events.filter(
-      (e) => activeEventTypes.size === 0 || activeEventTypes.has(e.type)
+      (e) => activeEventTypes.size > 0 && activeEventTypes.has(e.type)
     );
     if (filtered.length > 0) {
       addEvents(filtered);
