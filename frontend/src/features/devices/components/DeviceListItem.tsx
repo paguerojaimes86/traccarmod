@@ -5,6 +5,7 @@ import { StatusBadge, type DeviceStatus } from '@shared/ui/StatusBadge';
 import { useUnitConversion } from '@shared/hooks/useUnitConversion';
 import { timeAgo } from '@shared/lib/units';
 import { useMapStore } from '@features/map/store';
+import { useAlertStore } from '@features/alerts/store';
 import { IconMap } from '@shared/ui/icons';
 
 interface DeviceListItemProps {
@@ -44,6 +45,8 @@ const detailStyle: CSSProperties = {
 export function DeviceListItem({ device, position, isSelected }: DeviceListItemProps) {
   const setSelectedDevice = useMapStore((s) => s.setSelectedDevice);
   const { formatSpeed } = useUnitConversion();
+  const recentEvents = useAlertStore((s) => s.recentEvents);
+  const hasAlert = recentEvents.some((e) => e.deviceId === (device.id ?? 0));
 
   const handleClick = () => {
     setSelectedDevice(device.id ?? null);
@@ -92,6 +95,15 @@ export function DeviceListItem({ device, position, isSelected }: DeviceListItemP
           </div>
         </div>
       </div>
+      {hasAlert && (
+        <span style={{
+          width: '0.5rem',
+          height: '0.5rem',
+          borderRadius: '9999px',
+          backgroundColor: '#ef4444',
+          boxShadow: '0 0 6px rgba(239, 68, 68, 0.5)',
+        }} />
+      )}
       <StatusBadge status={smartStatus} />
     </li>
   );

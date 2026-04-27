@@ -8,6 +8,12 @@ export const QUERY_KEYS = {
   session: ['session'] as const,
   groups: ['groups'] as const,
   reports: ['reports'] as const,
+  // Alerts / Notifications / Events
+  notifications: ['notifications'] as const,
+  notificationTypes: ['notificationTypes'] as const,
+  events: ['events'] as const,
+  reportEvents: (params: { deviceId?: number; type?: string; from: string; to: string }) =>
+    ['reportEvents', params] as const,
 } as const;
 
 export const WS_URL = import.meta.env.VITE_WS_URL || '';

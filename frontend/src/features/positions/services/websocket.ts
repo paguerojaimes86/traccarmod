@@ -1,6 +1,7 @@
 import { useAuthStore } from '@features/auth/store';
 import { useUiStore } from '@shared/lib/ui-store';
 import { WS_URL, WS_RECONNECT_BASE_DELAY, WS_RECONNECT_MAX_INTERVAL } from '@shared/lib/constants';
+import { alertsDebug, alertsWarn } from '@shared/lib/debug';
 
 type PositionMessage = {
   id?: number;
@@ -20,17 +21,30 @@ type PositionMessage = {
   attributes?: Record<string, unknown>;
 };
 
+export type EventMessage = {
+  id: number;
+  type: string;
+  deviceId: number;
+  eventTime: string;
+  positionId?: number;
+  geofenceId?: number;
+  attributes?: Record<string, unknown>;
+};
+
 type WsMessage = {
-  type?: 'positions' | 'devices' | string;
-  data?: PositionMessage[] | unknown;
+  positions?: PositionMessage[];
+  devices?: unknown[];
+  events?: EventMessage[];
 };
 
 type PositionHandler = (positions: PositionMessage[]) => void;
+type EventHandler = (events: EventMessage[]) => void;
 
 let ws: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let reconnectAttempt = 0;
 let positionListeners: Set<PositionHandler> = new Set();
+let eventListeners: Set<EventHandler> = new Set();
 let statusListeners: Set<(status: 'connected' | 'reconnecting' | 'disconnected') => void> = new Set();
 
 function getWsUrl(): string {
@@ -53,13 +67,18 @@ function setStatus(status: 'connected' | 'reconnecting' | 'disconnected') {
 
 function connect() {
   const { isAuthenticated } = useAuthStore.getState();
-  if (!isAuthenticated) return;
+  if (!isAuthenticated) {
+    alertsDebug('ws', 'skip connect: not authenticated');
+    return;
+  }
 
   clearReconnect();
 
   try {
+    alertsDebug('ws', 'connecting', { url: getWsUrl() });
     ws = new WebSocket(getWsUrl());
   } catch {
+    alertsWarn('ws', 'failed to construct websocket, scheduling reconnect');
     scheduleReconnect();
     return;
   }
@@ -67,22 +86,37 @@ function connect() {
   ws.onopen = () => {
     reconnectAttempt = 0;
     setStatus('connected');
+    alertsDebug('ws', 'connected');
   };
 
   ws.onmessage = (event) => {
     try {
       const message: WsMessage = JSON.parse(event.data);
-      if (message.type === 'positions' && Array.isArray(message.data)) {
-        const positions = message.data as PositionMessage[];
-        positionListeners.forEach((fn) => fn(positions));
+
+      // Traccar WebSocket format: { "positions": [...], "devices": [...], "events": [...] }
+      // Keys are at the root level, not nested in type/data
+
+      if (Array.isArray(message.positions) && message.positions.length > 0) {
+        alertsDebug('ws', 'positions message received', { count: message.positions.length });
+        positionListeners.forEach((fn) => fn(message.positions!));
+      }
+
+      if (Array.isArray(message.events) && message.events.length > 0) {
+        alertsDebug('ws', 'events message received', {
+          count: message.events.length,
+          types: message.events.map((e) => e.type),
+          ids: message.events.map((e) => e.id),
+        });
+        eventListeners.forEach((fn) => fn(message.events!));
       }
     } catch {
-      // ignore malformed messages
+      alertsWarn('ws', 'malformed message ignored');
     }
   };
 
   ws.onclose = () => {
     setStatus('disconnected');
+    alertsWarn('ws', 'socket closed');
     ws = null;
     if (useAuthStore.getState().isAuthenticated) {
       scheduleReconnect();
@@ -91,13 +125,17 @@ function connect() {
 
   ws.onerror = () => {
     setStatus('disconnected');
+    alertsWarn('ws', 'socket error');
   };
 }
 
 function scheduleReconnect() {
   clearReconnect();
   const { isAuthenticated } = useAuthStore.getState();
-  if (!isAuthenticated) return;
+  if (!isAuthenticated) {
+    alertsDebug('ws', 'skip reconnect: not authenticated');
+    return;
+  }
 
   setStatus('reconnecting');
 
@@ -105,6 +143,7 @@ function scheduleReconnect() {
     WS_RECONNECT_BASE_DELAY * Math.pow(2, reconnectAttempt),
     WS_RECONNECT_MAX_INTERVAL,
   );
+  alertsWarn('ws', 'scheduling reconnect', { attempt: reconnectAttempt + 1, delayMs: delay });
   reconnectAttempt++;
 
   reconnectTimer = setTimeout(() => {
@@ -115,6 +154,7 @@ function scheduleReconnect() {
 export const wsService = {
   connect,
   disconnect() {
+    alertsDebug('ws', 'disconnect requested');
     clearReconnect();
     reconnectAttempt = 0;
     if (ws) {
@@ -133,6 +173,12 @@ export const wsService = {
     positionListeners.add(handler);
     return () => {
       positionListeners.delete(handler);
+    };
+  },
+  onEvent(handler: EventHandler) {
+    eventListeners.add(handler);
+    return () => {
+      eventListeners.delete(handler);
     };
   },
   onStatus(handler: (status: 'connected' | 'reconnecting' | 'disconnected') => void) {

@@ -24,7 +24,24 @@ import {
   Navigation,
   Lock,
   AtSign,
-  Activity
+  Activity,
+  Bell,
+  AlertTriangle,
+  Plus,
+  Trash2,
+  Check,
+  ArrowLeft,
+  Fuel,
+  Wrench,
+  Key,
+  Power,
+  Thermometer,
+  Shield,
+  User,
+  Terminal,
+  Camera,
+  Zap,
+  Droplets,
 } from 'lucide-react';
 
 interface IconProps {
@@ -138,4 +155,72 @@ export function IconAt({ size = defaultProps.size, style, className, color, stro
 
 export function IconActivity({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
   return <Activity size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconBell({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Bell size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconAlertTriangle({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <AlertTriangle size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconPlus({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Plus size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconTrash2({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Trash2 size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconCheck({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Check size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconArrowLeft({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <ArrowLeft size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconFuel({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Fuel size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconWrench({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Wrench size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconKey({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Key size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconPower({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Power size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconThermometer({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Thermometer size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconShield({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Shield size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconUser({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <User size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconTerminal({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Terminal size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconCamera({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Camera size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconZap({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Zap size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconDroplets({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Droplets size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
 }

@@ -16,3 +16,4 @@ export type Maintenance = components['schemas']['Maintenance'];
 export type ReportSummary = components['schemas']['ReportSummary'];
 export type ReportTrips = components['schemas']['ReportTrips'];
 export type ReportStops = components['schemas']['ReportStops'];
+export type NotificationType = components['schemas']['NotificationType'];

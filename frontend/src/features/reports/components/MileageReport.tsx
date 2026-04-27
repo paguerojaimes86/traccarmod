@@ -174,8 +174,13 @@ export function MileageReport({ onClose }: MileageReportProps) {
         break;
       case 'custom': {
         if (!customFrom || !customTo) return null;
-        from.setTime(new Date(customFrom).getTime()); from.setHours(0, 0, 0, 0);
-        to.setTime(new Date(customTo).getTime()); to.setHours(23, 59, 59, 999);
+        // Parse YYYY-MM-DD as LOCAL date to avoid UTC offset bug.
+        // new Date("YYYY-MM-DD") parses as UTC midnight, which shifts
+        // the date to the previous day in negative-UTC timezones (e.g. UTC-3).
+        const [fromY, fromM, fromD] = customFrom.split('-').map(Number);
+        from.setFullYear(fromY, fromM - 1, fromD); from.setHours(0, 0, 0, 0);
+        const [toY, toM, toD] = customTo.split('-').map(Number);
+        to.setFullYear(toY, toM - 1, toD); to.setHours(23, 59, 59, 999);
         break;
       }
     }

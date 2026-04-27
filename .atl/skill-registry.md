@@ -10,22 +10,23 @@
 | branch-pr | Creating a pull request, opening a PR, preparing changes for review | Follow issue-first enforcement system. Create branch from issue, implement, then PR. |
 | deploy-to-vercel | Deploy actions: "deploy my app", "push this live", "create preview deployment" | Deploy to Vercel platform. Handle build config, env vars, and deployment. |
 | find-skills | "how do I do X", "find a skill for X", "is there a skill that can..." | Search and discover installable agent skills for extending capabilities. |
-| go-testing | Writing Go tests, using teatest, adding test coverage | Follow Gentleman.Dots Go testing patterns including Bubbletea TUI testing. |
 | issue-creation | Creating a GitHub issue, reporting a bug, requesting a feature | Follow issue-first enforcement system with structured templates. |
-| java-architect | Building/configuring enterprise Java with Spring Boot 3.x, microservices, reactive programming | Implement WebFlux endpoints, optimize JPA, configure Spring Security OAuth2/JWT, resolve auth issues. |
-| java-expert | Java 21+ development, Spring Boot, Maven/Gradle, enterprise best practices | Expert-level Java patterns, modern Java features, Spring Boot conventions. |
-| java-junit | JUnit 5 unit testing, data-driven tests | Best practices for JUnit 5 including parameterized tests, test organization. |
-| java-springboot | Developing applications with Spring Boot | Spring Boot best practices, auto-configuration, dependency injection, testing. |
 | judgment-day | "judgment day", "review adversarial", "dual review", "doble review", "juzgar" | Parallel adversarial review: two blind judges, synthesize findings, apply fixes, re-judge. |
-| kotlin-multiplatform | Abstraction decisions for KMP, source set placement, expect/actual patterns | Guide platform abstraction for Android, JVM/Desktop, iOS with KMP. |
-| kotlin-specialist | Kotlin coroutines, Flow, KMP, Compose UI, Ktor, DSL design | Idiomatic Kotlin patterns, coroutines, Flow, multiplatform architecture. |
 | skill-creator | "create a new skill", "add agent instructions", "document patterns for AI" | Create AI agent skills following Agent Skills spec. |
 | superdesign | Frontend UI/UX design tasks before implementation | Design agent: create projects, drafts, iterations, components, flow pages. |
-| using-superpowers | Starting any conversation | Establish how to find and use skills, require Skill tool invocation before responses. |
-| vercel-composition-patterns | Refactoring components with boolean prop proliferation, building component libraries | React composition patterns: compound components, render props, context providers. |
-| vercel-react-best-practices | Writing/reviewing React/Next.js code, performance optimization | React/Next.js performance: data fetching, bundle optimization, rendering patterns. |
-| vercel-react-native-skills | Building React Native/Expo apps, mobile performance, native modules | React Native best practices: list optimization, animations, native APIs. |
 | web-design-guidelines | "review my UI", "check accessibility", "audit design", "review UX" | Review UI code against Web Interface Guidelines for accessibility and UX. |
+| vitest | Writing tests, adding test coverage, test-driven development | Follow Vitest best practices: test organization, mocking, assertions, snapshot testing. |
+| zustand-state-management | Managing state with Zustand stores, creating new stores, persisting state | Zustand store patterns: State+Actions, persist middleware, selectors, computed values. |
+| tanstack-query | Data fetching with React Query, caching, mutations, optimistic updates | TanStack Query v5 patterns: query keys, staleTime, mutations, invalidation, prefetching. |
+| openapi-to-typescript | Generating types from OpenAPI specs, using openapi-fetch client | OpenAPI to TypeScript code generation, openapi-fetch patterns, typed API clients. |
+| accessibility | "improve accessibility", "a11y audit", "WCAG compliance", "make accessible" | Audit and improve web accessibility following WCAG 2.2 guidelines. |
+| traccar-patterns | Writing React components, hooks, stores, or UI for this project — always load before implementing features | Project patterns: Zustand stores, React Query hooks, WebSocket service, permissions hook, API client, navigation, inline CSS, inline styles, unit conversion, Traccar API reference. |
+| vitest | Writing tests, adding test coverage, test-driven development | Follow Vitest best practices: test organization, mocking, assertions, snapshot testing. |
+| zustand-state-management | Managing state with Zustand stores, creating new stores, persisting state | Zustand store patterns: State+Actions, persist middleware, selectors, computed values. |
+| tanstack-query | Data fetching with React Query, caching, mutations, optimistic updates | TanStack Query v5 patterns: query keys, staleTime, mutations, invalidation, prefetching. |
+| openapi-to-typescript | Generating types from OpenAPI specs, using openapi-fetch client | OpenAPI to TypeScript code generation, openapi-fetch patterns, typed API clients. |
+| accessibility | "improve accessibility", "a11y audit", "WCAG compliance", "make accessible" | Audit and improve web accessibility following WCAG 2.2 guidelines. |
+| traccar-patterns | Writing React components, hooks, stores, or UI for this project — always load before implementing features | Project patterns: Zustand stores, React Query hooks, WebSocket service, permissions hook, API client, navigation, inline CSS, inline styles, unit conversion, Traccar API reference. |
 
 ## Project Conventions
 
@@ -51,32 +52,11 @@ Deploy to Vercel platform. Handle build config, env vars, and deployment.
 ### find-skills
 Search and discover installable agent skills for extending capabilities.
 
-### go-testing
-Follow Gentleman.Dots Go testing patterns including Bubbletea TUI testing.
-
 ### issue-creation
 Follow issue-first enforcement system with structured templates.
 
-### java-architect
-Implement WebFlux endpoints, optimize JPA, configure Spring Security OAuth2/JWT, resolve auth issues.
-
-### java-expert
-Expert-level Java patterns, modern Java features, Spring Boot conventions.
-
-### java-junit
-Best practices for JUnit 5 including parameterized tests, test organization.
-
-### java-springboot
-Spring Boot best practices, auto-configuration, dependency injection, testing.
-
 ### judgment-day
 Parallel adversarial review: two blind judges, synthesize findings, apply fixes, re-judge.
-
-### kotlin-multiplatform
-Guide platform abstraction for Android, JVM/Desktop, iOS with KMP.
-
-### kotlin-specialist
-Idiomatic Kotlin patterns, coroutines, Flow, multiplatform architecture.
 
 ### skill-creator
 Create AI agent skills following Agent Skills spec.
@@ -84,17 +64,38 @@ Create AI agent skills following Agent Skills spec.
 ### superdesign
 Design agent: create projects, drafts, iterations, components, flow pages.
 
-### using-superpowers
-Establish how to find and use skills, require Skill tool invocation before responses.
-
-### vercel-composition-patterns
-React composition patterns: compound components, render props, context providers.
-
-### vercel-react-best-practices
-React/Next.js performance: data fetching, bundle optimization, rendering patterns.
-
-### vercel-react-native-skills
-React Native best practices: list optimization, animations, native APIs.
-
 ### web-design-guidelines
 Review UI code against Web Interface Guidelines for accessibility and UX.
+
+### vitest
+Follow Vitest best practices: test organization with describe/it blocks, mocking with vi.mock/vi.fn, assertions with expect, snapshot testing, coverage configuration.
+
+### zustand-state-management
+Zustand store patterns: separate State and Actions interfaces, use persist middleware for state that survives refresh, always prefix storage keys, use selectors to prevent re-renders, computed values via getters.
+
+### tanstack-query
+TanStack Query v5 patterns: define all query keys in a central QUERY_KEYS object, use staleTime 30s by default, handle errors with if(error) throw error, mutations with onSuccess invalidation, use apiClient from shared/api/client for typed calls.
+
+### openapi-to-typescript
+OpenAPI to TypeScript patterns: use openapi-typescript to generate schema.d.ts, create types.models.ts for clean re-exports, use openapi-fetch for typed API calls, never import from generated/ directly in feature code.
+
+### accessibility
+Audit and improve web accessibility: WCAG 2.2 compliance, keyboard navigation, ARIA labels, screen reader support, color contrast, focus management, semantic HTML.
+
+### traccar-patterns
+Project patterns: Zustand stores (State+Actions, partialize, 'traccar-' prefix), React Query hooks (apiClient.GET/POST, QUERY_KEYS, staleTime 30s, error throw), WebSocket singleton (wsService.onPosition/onEvent listener pattern), Permissions hook (usePermissions from authStore.user flags), Navigation (icon-nav sections in navigation-store), inline CSSProperties (no Tailwind in code), API types (import from @shared/api/types.models, never from generated/), unit conversion (useUnitConversion for knots→km/h), Traccar event types (deviceOverspeed, geofenceEnter, geofenceExit), Traccar role flags (administrator, userLimit, readonly, deviceReadonly, limitCommands), speed limits (device.attributes.speedLimit or geofence.attributes.speedLimit in knots).
+
+### vitest
+Follow Vitest best practices: test organization with describe/it blocks, mocking with vi.mock/vi.fn, assertions with expect, snapshot testing, coverage configuration.
+
+### zustand-state-management
+Zustand store patterns: separate State and Actions interfaces, use persist middleware for state that survives refresh, always prefix storage keys, use selectors to prevent re-renders, computed values via getters.
+
+### tanstack-query
+TanStack Query v5 patterns: define all query keys in a central QUERY_KEYS object, use staleTime 30s by default, handle errors with if(error) throw error, mutations with onSuccess invalidation, use apiClient from shared/api/client for typed calls.
+
+### openapi-to-typescript
+OpenAPI to TypeScript patterns: use openapi-typescript to generate schema.d.ts, create types.models.ts for clean re-exports, use openapi-fetch for typed API calls, never import from generated/ directly in feature code.
+
+### accessibility
+Audit and improve web accessibility: WCAG 2.2 compliance, keyboard navigation, ARIA labels, screen reader support, color contrast, focus management, semantic HTML.

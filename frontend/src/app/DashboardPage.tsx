@@ -7,12 +7,17 @@ import { HistoryPath, type HistoryPosition } from '@features/map/layers/HistoryP
 import { GeofenceLayers } from '@features/geofences/components/GeofenceLayers';
 import { HistoryPanel } from '@features/positions/components/HistoryPanel';
 import { useWebSocket } from '@features/positions/hooks/useWebSocket';
+import { useEvents } from '@features/events/hooks/useEvents';
 import { useMapStore } from '@features/map/store';
 import { DeviceInfoPanel } from '@features/map/components/DeviceInfoPanel';
 import { MileageReport } from '@features/reports/components/MileageReport';
+import { AlertsPanel } from '@features/alerts/components/AlertsPanel';
+import { AlertToastContainer } from '@features/alerts/components/AlertToastContainer';
+import { AlertWizard } from '@features/alerts/components/AlertWizard';
 
 export function DashboardPage() {
   useWebSocket();
+  useEvents();
   const selectedDeviceId = useMapStore((s) => s.selectedDeviceId);
   const showHistory = useMapStore((s) => s.showHistory);
   const setShowHistory = useMapStore((s) => s.setShowHistory);
@@ -20,6 +25,8 @@ export function DashboardPage() {
   const setShowMileageReport = useMapStore((s) => s.setShowMileageReport);
 
   const [historyPositions, setHistoryPositions] = useState<HistoryPosition[]>([]);
+  const [showWizard, setShowWizard] = useState(false);
+  const [alertTab, setAlertTab] = useState<'active' | 'configured'>('active');
 
   const handlePositionsLoaded = useCallback(
     (positions: HistoryPosition[]) => {
@@ -34,32 +41,37 @@ export function DashboardPage() {
   }, [setShowHistory]);
 
   return (
-    <div style={{ display: 'flex', height: '100%', width: '100%', position: 'relative' }}>
-      <DeviceList />
-      <div style={{ flex: 1, position: 'relative' }}>
-        <MapView>
-          <MotionTrails />
-          <DeviceMarkers />
-          <GeofenceLayers />
-          {showHistory && selectedDeviceId && (
-            <HistoryPath positions={historyPositions} />
-          )}
-        </MapView>
+    <>
+      <div style={{ display: 'flex', height: '100%', width: '100%', position: 'relative' }}>
+        <DeviceList />
+        <div style={{ flex: 1, position: 'relative' }}>
+          <MapView>
+            <MotionTrails />
+            <DeviceMarkers />
+            <GeofenceLayers />
+            {showHistory && selectedDeviceId && (
+              <HistoryPath positions={historyPositions} />
+            )}
+          </MapView>
 
-        {showMileageReport && (
-          <MileageReport onClose={() => setShowMileageReport(false)} />
-        )}
-        
-        {showHistory && selectedDeviceId && (
-          <HistoryPanel
-            deviceId={selectedDeviceId}
-            onPositionsLoaded={handlePositionsLoaded}
-            onClose={handleCancelHistory}
-          />
-        )}
-        {!showHistory && <DeviceInfoPanel />}
+          {showMileageReport && (
+            <MileageReport onClose={() => setShowMileageReport(false)} />
+          )}
+          
+          {showHistory && selectedDeviceId && (
+            <HistoryPanel
+              deviceId={selectedDeviceId}
+              onPositionsLoaded={handlePositionsLoaded}
+              onClose={handleCancelHistory}
+            />
+          )}
+          {!showHistory && <DeviceInfoPanel />}
+        </div>
+        <AlertsPanel onCreateAlert={() => setShowWizard(true)} initialTab={alertTab} onTabChange={setAlertTab} />
       </div>
-    </div>
+      <AlertToastContainer />
+      {showWizard && <AlertWizard open={showWizard} onClose={() => setShowWizard(false)} onSuccess={() => setAlertTab('configured')} />}
+    </>
   );
 }
 
