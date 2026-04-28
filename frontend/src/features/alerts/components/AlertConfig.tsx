@@ -64,6 +64,7 @@ const noConfigStyle: CSSProperties = {
 export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
   const { data: geofences = [] } = useGeofences();
   const { speedUnit } = useUnitConversion();
+  const speedLabel = speedUnit === 'kmh' ? 'km/h' : speedUnit === 'mph' ? 'mph' : 'kn';
   const typeConfig = ALERT_TYPE_CONFIG[type];
   const requirements = typeConfig?.configRequirements ?? {};
 
@@ -107,7 +108,7 @@ export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
 
       {requirements.needsSpeedLimit && (
         <div style={sectionStyle}>
-          <label style={labelStyle}>Límite de Velocidad (km/h)</label>
+          <label style={labelStyle}>Límite de Velocidad ({speedLabel})</label>
           <input
             type="number"
             style={inputStyle}

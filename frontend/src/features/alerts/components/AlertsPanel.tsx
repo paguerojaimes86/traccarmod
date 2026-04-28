@@ -1,4 +1,7 @@
 import { useState, useMemo, useEffect, type CSSProperties } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@shared/lib/constants';
+import type { PositionMessage } from '@features/positions/services/websocket';
 import { useAlertStore } from '@features/alerts/store';
 import { useDevices } from '@features/devices/hooks/useDevices';
 import { usePermissions } from '@shared/permissions';
@@ -166,6 +169,7 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
   const { isActive: wsEventsActive } = useEvents();
   const flyToDevice = useMapStore((s) => s.flyToDevice);
   const deleteNotification = useDeleteNotification();
+  const queryClient = useQueryClient();
 
   const handleDeleteEvent = (eventId: number) => {
     removeEvent(eventId);
@@ -203,7 +207,12 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
   const handleAlertClick = (event: typeof recentEvents[number]) => {
     const device = deviceMap.get(event.deviceId);
     if (device) {
-      flyToDevice(event.deviceId, [0, 0], 15);
+      // Look up the device's current position from React Query cache (updated via WebSocket)
+      const cached = queryClient.getQueryData<PositionMessage[]>(QUERY_KEYS.allPositions);
+      const devicePos = cached?.find((p) => p.deviceId === event.deviceId);
+      if (devicePos?.latitude != null && devicePos?.longitude != null) {
+        flyToDevice(event.deviceId, [devicePos.latitude, devicePos.longitude], 15);
+      }
     }
   };
 
