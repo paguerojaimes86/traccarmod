@@ -5,6 +5,7 @@ import { DeviceMarkers } from '@features/map/layers/DeviceMarkers';
 import { MotionTrails } from '@features/map/layers/MotionTrails';
 import { HistoryPath, type HistoryPosition } from '@features/map/layers/HistoryPath';
 import { GeofenceLayers } from '@features/geofences/components/GeofenceLayers';
+import { RouteLayers } from '@features/map/layers/RouteLayers';
 import { HistoryPanel } from '@features/positions/components/HistoryPanel';
 import { useWebSocket } from '@features/positions/hooks/useWebSocket';
 import { useEvents } from '@features/events/hooks/useEvents';
@@ -14,6 +15,7 @@ import { MileageReport } from '@features/reports/components/MileageReport';
 import { AlertsPanel } from '@features/alerts/components/AlertsPanel';
 import { AlertToastContainer } from '@features/alerts/components/AlertToastContainer';
 import { AlertWizard } from '@features/alerts/components/AlertWizard';
+import { IconEyeOff, IconEye } from '@shared/ui/icons';
 
 export function DashboardPage() {
   useWebSocket();
@@ -23,6 +25,8 @@ export function DashboardPage() {
   const setShowHistory = useMapStore((s) => s.setShowHistory);
   const showMileageReport = useMapStore((s) => s.showMileageReport);
   const setShowMileageReport = useMapStore((s) => s.setShowMileageReport);
+  const showRoutes = useMapStore((s) => s.showRoutes);
+  const setShowRoutes = useMapStore((s) => s.setShowRoutes);
 
   const [historyPositions, setHistoryPositions] = useState<HistoryPosition[]>([]);
   const [showWizard, setShowWizard] = useState(false);
@@ -47,12 +51,41 @@ export function DashboardPage() {
         <div style={{ flex: 1, position: 'relative' }}>
           <MapView>
             <MotionTrails />
-            <DeviceMarkers />
             <GeofenceLayers />
+            <RouteLayers visible={showRoutes} />
+            <DeviceMarkers />
             {showHistory && selectedDeviceId && (
               <HistoryPath positions={historyPositions} />
             )}
           </MapView>
+
+          <button
+            title={showRoutes ? 'Ocultar Rutas' : 'Mostrar Rutas'}
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: 12,
+              zIndex: 2,
+              padding: '0.4rem 0.6rem',
+              border: '1px solid',
+              borderColor: showRoutes ? 'var(--accent)' : 'rgba(15, 23, 42, 0.1)',
+              background: showRoutes ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.92)',
+              borderRadius: '0.5rem',
+              cursor: 'pointer',
+              color: showRoutes ? 'var(--accent)' : '#64748b',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              fontSize: '0.65rem',
+              fontWeight: 700,
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+            }}
+            onClick={() => setShowRoutes(!showRoutes)}
+          >
+            {showRoutes ? <IconEyeOff size={14} /> : <IconEye size={14} />}
+            <span>{showRoutes ? 'RUTAS' : 'RUTAS'}</span>
+          </button>
 
           {showMileageReport && (
             <MileageReport onClose={() => setShowMileageReport(false)} />

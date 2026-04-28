@@ -10,6 +10,7 @@ interface MapState {
   followMode: boolean;
   showHistory: boolean;
   showMileageReport: boolean;
+  showRoutes: boolean;
 }
 
 interface MapActions {
@@ -21,6 +22,7 @@ interface MapActions {
   setFollowMode: (follow: boolean) => void;
   setShowHistory: (show: boolean) => void;
   setShowMileageReport: (show: boolean) => void;
+  setShowRoutes: (show: boolean) => void;
   flyToDevice: (deviceId: number, center: [number, number], zoom?: number) => void;
 }
 
@@ -35,6 +37,7 @@ export const useMapStore = create<MapState & MapActions>()(
       followMode: false,
       showHistory: false,
       showMileageReport: false,
+      showRoutes: true,
 
       setCenter: (center) => set({ center }),
       setZoom: (zoom) => set({ zoom }),
@@ -44,6 +47,7 @@ export const useMapStore = create<MapState & MapActions>()(
       setFollowMode: (followMode) => set({ followMode }),
       setShowHistory: (showHistory) => set({ showHistory }),
       setShowMileageReport: (showMileageReport) => set({ showMileageReport }),
+      setShowRoutes: (showRoutes) => set({ showRoutes }),
 
       flyToDevice: (deviceId, center, zoom) =>
         set({
@@ -58,6 +62,7 @@ export const useMapStore = create<MapState & MapActions>()(
       partialize: (state) => ({
         center: state.center,
         zoom: state.zoom,
+        showRoutes: state.showRoutes,
       }),
     },
   ),

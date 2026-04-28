@@ -5,6 +5,7 @@ export const QUERY_KEYS = {
   positions: (params: { deviceId: number; from: string; to: string }) =>
     ['positions', params] as const,
   geofences: ['geofences'] as const,
+  routes: ['routes'] as const,
   session: ['session'] as const,
   groups: ['groups'] as const,
   reports: ['reports'] as const,

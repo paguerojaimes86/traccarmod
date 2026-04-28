@@ -23,6 +23,7 @@ export function GeofenceLayers({ visible = true }: GeofenceLayersProps) {
     geofences.forEach((gf, i) => {
       if (!gf.area || !gf.id) return;
       if (isCircleWkt(gf.area)) return;
+      if ((gf.attributes as Record<string, string>)?.isRoute === 'true') return;
 
       const geojson = wktToMapLibreSource(gf.area, {
         id: gf.id,
