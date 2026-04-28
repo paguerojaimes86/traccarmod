@@ -42,16 +42,12 @@ export function useEvents() {
       const from = new Date(Date.now() - EVENT_WINDOW_MS).toISOString();
       const to = new Date().toISOString();
 
-      const params: Record<string, unknown> = {
+      const params = {
         deviceId: deviceIds,
         from,
         to,
+        ...(eventTypeArray.length > 0 ? { type: eventTypeArray } : {}),
       };
-
-      // Server-side filter: only fetch events for configured notification types
-      if (eventTypeArray.length > 0) {
-        params.type = eventTypeArray;
-      }
 
       const { data, error } = await apiClient.GET('/reports/events', {
         params: { query: params },

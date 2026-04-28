@@ -3,7 +3,7 @@ import { useUiStore } from '@shared/lib/ui-store';
 import { WS_URL, WS_RECONNECT_BASE_DELAY, WS_RECONNECT_MAX_INTERVAL } from '@shared/lib/constants';
 import { alertsDebug, alertsWarn } from '@shared/lib/debug';
 
-type PositionMessage = {
+export type PositionMessage = {
   id?: number;
   deviceId?: number;
   protocol?: string;
