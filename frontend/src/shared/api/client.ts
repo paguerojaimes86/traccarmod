@@ -2,7 +2,7 @@ import createClient from 'openapi-fetch';
 import type { paths } from './generated/schema';
 import { useAuthStore } from '@features/auth/store';
 
-const BASE_URL = '/api';
+const BASE_URL = import.meta.env.DEV ? '/api' : 'https://gps.msglobalgps.com/api';
 
 export const apiClient = createClient<paths>({
   baseUrl: BASE_URL,
