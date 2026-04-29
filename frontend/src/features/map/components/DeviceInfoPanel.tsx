@@ -1,7 +1,7 @@
 import { memo, useMemo, type CSSProperties } from 'react';
 import { useMapStore } from '@features/map/store';
 import { useDevices } from '@features/devices/hooks/useDevices';
-import { usePositions } from '@features/positions/hooks/usePositions';
+import { useDevicePosition } from '@features/positions/hooks/usePositions';
 import { useUnitConversion } from '@shared/hooks/useUnitConversion';
 import { StatusBadge, type DeviceStatus } from '@shared/ui/StatusBadge';
 import { formatDuration, formatTimestamp } from '@shared/lib/units';
@@ -306,16 +306,14 @@ export function DeviceInfoPanel() {
   const setFollowMode = useMapStore((s) => s.setFollowMode);
 
   const { data: devices = [] } = useDevices();
-  const { data: positions = [] } = usePositions();
+  const { data: position } = useDevicePosition(selectedDeviceId);
   const { formatSpeed, formatDistance } = useUnitConversion();
 
   const deviceMap = useMemo(() => new Map(devices.map((d) => [d.id, d])), [devices]);
-  const positionMap = useMemo(() => new Map(positions.map((p) => [p.deviceId, p])), [positions]);
 
   if (!selectedDeviceId) return null;
 
   const device = deviceMap.get(selectedDeviceId);
-  const position = positionMap.get(selectedDeviceId) as Position | undefined;
 
   if (!device) return null;
 

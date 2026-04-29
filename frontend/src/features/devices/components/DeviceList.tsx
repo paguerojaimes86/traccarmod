@@ -1,6 +1,6 @@
 import { useState, useMemo, type CSSProperties, type ReactNode } from 'react';
 import { useDevices } from '../hooks/useDevices';
-import { usePositions } from '@features/positions/hooks/usePositions';
+import { useDevicePositionsMap } from '@features/positions/hooks/usePositions';
 import { DeviceListItem } from './DeviceListItem';
 import { useMapStore } from '@features/map/store';
 import { LoadingState } from '@shared/ui';
@@ -80,18 +80,13 @@ const toggleButtonStyle: CSSProperties = {
 
 export function DeviceList() {
   const { data: devices = [], isLoading, isError, refetch } = useDevices();
-  const { data: positions = [] } = usePositions();
+  const { data: positionMap = new Map(), isLoading: positionsLoading } = useDevicePositionsMap();
   const selectedDeviceId = useMapStore((s) => s.selectedDeviceId);
   const setShowMileageReport = useMapStore((s) => s.setShowMileageReport);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const toggleSidebar = () => setSidebarOpen((o) => !o);
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'moving' | 'stopped' | 'offline'>('all');
-
-  const positionMap = useMemo(
-    () => new Map(positions.map((p) => [p.deviceId, p])),
-    [positions],
-  );
 
   const stats = useMemo(() => {
     const counts = { all: 0, moving: 0, stopped: 0, offline: 0 };
