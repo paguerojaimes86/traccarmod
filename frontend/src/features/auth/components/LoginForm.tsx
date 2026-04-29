@@ -142,11 +142,11 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
               </div>
 
               <div className="form-options">
-                <label className="remember">
-                  <input type="checkbox" />
+                <label htmlFor="remember-me" className="remember">
+                  <input id="remember-me" type="checkbox" />
                   Recordarme
                 </label>
-                <a href="#">Olvidé mi contraseña</a>
+                <button type="button" className="link-button" onClick={() => {}}>Olvidé mi contraseña</button>
               </div>
 
               <button type="submit" className="submit-button" disabled={isLoading}>

@@ -20,7 +20,7 @@ export function useEventHistory({
   enabled = true,
 }: UseEventHistoryParams) {
   return useQuery({
-    queryKey: QUERY_KEYS.reportEvents({ deviceId: deviceId?.[0], type: type?.[0], from, to }),
+    queryKey: QUERY_KEYS.reportEvents({ deviceId, type, from, to }),
     queryFn: async () => {
       const { data, error } = await apiClient.GET('/reports/events', {
         params: {

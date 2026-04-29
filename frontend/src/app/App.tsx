@@ -1,47 +1,34 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { LoadingState } from '@shared/ui';
 import { Providers } from './providers';
 import { ProtectedRoute } from '@shared/components/ProtectedRoute';
+import { PermissionRoute } from '@shared/components/PermissionRoute';
 import { useAuthStore } from '@features/auth/store';
-import { LogoutButton } from '@features/auth/components/LogoutButton';
+import { Layout } from './Layout';
+import {
+  canViewDevices,
+  canViewGeofences,
+  canViewUsers,
+  canViewGroups,
+  canViewAlerts,
+  canViewCommands,
+  canViewReports,
+  canViewSettings,
+} from '@shared/permissions';
 
 const LoginPage = lazy(() => import('@features/auth/components/LoginPage'));
 const DashboardPage = lazy(() => import('./DashboardPage'));
+const DevicesPage = lazy(() => import('@features/devices/pages/DevicesPage'));
+const GeofencesPage = lazy(() => import('@features/geofences/pages/GeofencesPage'));
+const UsersPage = lazy(() => import('@features/users/pages/UsersPage'));
+const GroupsPage = lazy(() => import('@features/groups/pages/GroupsPage'));
+const AlertsPage = lazy(() => import('@features/alerts/pages/AlertsPage'));
+const CommandsPage = lazy(() => import('@features/commands/pages/CommandsPage'));
+const ReportsPage = lazy(() => import('@features/reports/pages/ReportsPage'));
+const SettingsPage = lazy(() => import('@features/settings/pages/SettingsPage'));
 
-function AppHeader() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const user = useAuthStore((s) => s.user);
-
-  if (!isAuthenticated) return null;
-
-  return (
-    <header
-      className="glass"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0.75rem 1.5rem',
-        borderBottom: '1px solid rgba(15, 23, 42, 0.08)',
-        height: '60px',
-        zIndex: 50,
-      }}
-    >
-      <span style={{ fontFamily: 'Outfit', fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', letterSpacing: '0.05em' }}>
-        MSGLOBAL GPS
-      </span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <span style={{ fontSize: '0.875rem', color: '#475569', fontWeight: 500 }}>
-          {user?.name ?? user?.email ?? ''}
-        </span>
-        <LogoutButton />
-      </div>
-    </header>
-  );
-}
-
-function AuthRedirect({ children }: { children: React.ReactNode }) {
+function AuthRedirect({ children }: { children: ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
@@ -63,19 +50,73 @@ export function App() {
                 </AuthRedirect>
               }
             />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <AppHeader />
-                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-                      <DashboardPage />
-                    </div>
-                  </div>
-                </ProtectedRoute>
-              }
-            />
+            <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route index element={<DashboardPage />} />
+              <Route
+                path="devices"
+                element={
+                  <PermissionRoute predicate={canViewDevices}>
+                    <DevicesPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="geofences"
+                element={
+                  <PermissionRoute predicate={canViewGeofences}>
+                    <GeofencesPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="users"
+                element={
+                  <PermissionRoute predicate={canViewUsers}>
+                    <UsersPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="groups"
+                element={
+                  <PermissionRoute predicate={canViewGroups}>
+                    <GroupsPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="alerts"
+                element={
+                  <PermissionRoute predicate={canViewAlerts}>
+                    <AlertsPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="commands"
+                element={
+                  <PermissionRoute predicate={canViewCommands}>
+                    <CommandsPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="reports"
+                element={
+                  <PermissionRoute predicate={canViewReports}>
+                    <ReportsPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="settings"
+                element={
+                  <PermissionRoute predicate={canViewSettings}>
+                    <SettingsPage />
+                  </PermissionRoute>
+                }
+              />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

@@ -1,65 +1,9 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useAuthStore } from '@features/auth/store';
 import { useUiStore } from '@shared/lib/ui-store';
 import { getMenuItems, type MenuItem, type MenuCategory } from './menuConfig';
-import { IconMenu } from '@shared/ui/icons';
-
-function useIsMobile(breakpoint = 768) {
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= breakpoint);
-
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth <= breakpoint);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, [breakpoint]);
-
-  return isMobile;
-}
-
-function useFocusTrap(enabled: boolean, containerRef: React.RefObject<HTMLElement | null>) {
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (!enabled) return;
-
-    previousFocusRef.current = document.activeElement as HTMLElement;
-
-    // Move focus to first focusable element inside container
-    const container = containerRef.current;
-    if (container) {
-      const focusable = container.querySelector<HTMLElement>('a, button, [tabindex]:not([tabindex="-1"])');
-      focusable?.focus();
-    }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab' || !container) return;
-
-      const focusableElements = Array.from(
-        container.querySelectorAll<HTMLElement>('a, button, [tabindex]:not([tabindex="-1"])')
-      ).filter((el) => !el.disabled && el.offsetParent !== null);
-
-      if (focusableElements.length === 0) return;
-
-      const first = focusableElements[0];
-      const last = focusableElements[focusableElements.length - 1];
-
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      previousFocusRef.current?.focus();
-    };
-  }, [enabled, containerRef]);
-}
+import { useIsMobile, useEscapeKey, useFocusTrap } from '@shared/hooks';
 
 export function MenuSidebar() {
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
@@ -69,7 +13,12 @@ export function MenuSidebar() {
   const isMobile = useIsMobile();
   const asideRef = useRef<HTMLElement>(null);
 
+  const closeSidebar = useCallback(() => {
+    if (sidebarOpen) toggleSidebar();
+  }, [sidebarOpen, toggleSidebar]);
+
   useFocusTrap(isMobile && sidebarOpen, asideRef);
+  useEscapeKey(isMobile && sidebarOpen, closeSidebar);
 
   const items = useMemo(() => getMenuItems(user), [user]);
 
@@ -91,35 +40,8 @@ export function MenuSidebar() {
 
   const nav = (
     <nav style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: sidebarOpen ? 'space-between' : 'center',
-          padding: '1rem',
-          height: 60,
-          borderBottom: '1px solid rgba(15,23,42,0.06)',
-        }}
-      >
-        {sidebarOpen && (
-          <span style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: '0.875rem', color: '#0f172a' }}>
-            MENÚ
-          </span>
-        )}
-        <button
-          onClick={toggleSidebar}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            color: '#64748b',
-            display: 'flex',
-            padding: '0.25rem',
-          }}
-          aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
-        >
-          <IconMenu size={20} />
-        </button>
+      <div style={{ height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {/* Solo espacio para alinear con el header */}
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem 0.5rem' }}>
@@ -158,7 +80,7 @@ export function MenuSidebar() {
                     textDecoration: 'none',
                     fontSize: '0.8125rem',
                     fontWeight: 600,
-                    transition: 'all 0.2s',
+                    transition: 'background-color 0.2s ease, color 0.2s ease, padding 0.2s ease',
                     justifyContent: sidebarOpen ? 'flex-start' : 'center',
                   }}
                 >

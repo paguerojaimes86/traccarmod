@@ -60,3 +60,27 @@ export function computePermissions(user: User | null): Permissions {
 export function canAccessDevice(_user: User | null, _device: Device): boolean {
   return true;
 }
+
+// Menu visibility predicates — used by menuConfig and PermissionRoute
+
+export const canViewDevices = (_p: Permissions) => true;
+export const canManageDevices = (p: Permissions) => p.canManageDevices;
+
+export const canViewGeofences = (_p: Permissions) => true;
+export const canManageGeofences = (p: Permissions) => p.canManage;
+
+export const canViewUsers = (p: Permissions) => p.canManageUsers;
+export const canManageUsers = (p: Permissions) => p.canManageUsers;
+
+export const canViewGroups = (_p: Permissions) => true;
+export const canManageGroups = (p: Permissions) => p.canManage;
+
+export const canViewAlerts = (_p: Permissions) => true;
+export const canManageAlerts = (p: Permissions) => p.canManage;
+
+export const canViewCommands = (_p: Permissions) => true;
+export const canSendCommands = (p: Permissions) => p.canSendCommands;
+
+export const canViewReports = (_p: Permissions) => true;
+
+export const canViewSettings = (p: Permissions) => p.isAdmin;

@@ -4,11 +4,14 @@ import { useUiStore } from '@shared/lib/ui-store';
 import { MenuSidebar } from '@shared/navigation/MenuSidebar';
 import { LogoutButton } from '@features/auth/components/LogoutButton';
 import { IconMenu } from '@shared/ui/icons';
+import { useIsMobile } from '@shared/hooks';
 
 function AppHeader() {
   const user = useAuthStore((s) => s.user);
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const isMobile = useIsMobile();
+  const headerVisible = !isMobile || sidebarOpen;
 
   return (
     <header
@@ -17,17 +20,31 @@ function AppHeader() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0.75rem 1.5rem',
-        borderBottom: '1px solid rgba(15, 23, 42, 0.08)',
-        height: '60px',
+        padding: headerVisible ? '0.75rem 1.5rem' : '0',
+        borderBottom: headerVisible ? '1px solid var(--border-default)' : 'none',
+        height: headerVisible ? 'var(--header-height)' : '0',
+        opacity: headerVisible ? 1 : 0,
+        overflow: 'hidden',
+        transition: 'height 250ms var(--ease-default), padding 250ms var(--ease-default), opacity 200ms ease',
         zIndex: 50,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          opacity: headerVisible ? 1 : 0,
+          transition: 'opacity 200ms ease',
+          transitionDelay: headerVisible ? '50ms' : '0ms',
+          pointerEvents: headerVisible ? 'auto' : 'none',
+        }}
+      >
         <button
           onClick={toggleSidebar}
           aria-expanded={sidebarOpen}
           aria-controls="mobile-menu-sidebar"
+          aria-label={sidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
           style={{
             background: 'transparent',
             border: 'none',
@@ -36,7 +53,6 @@ function AppHeader() {
             display: 'flex',
             padding: '0.25rem',
           }}
-          aria-label="Abrir menú"
         >
           <IconMenu size={20} />
         </button>
@@ -44,8 +60,18 @@ function AppHeader() {
           MSGLOBAL GPS
         </span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <span style={{ fontSize: '0.875rem', color: '#475569', fontWeight: 500 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          opacity: headerVisible ? 1 : 0,
+          transition: 'opacity 200ms ease',
+          transitionDelay: headerVisible ? '50ms' : '0ms',
+          pointerEvents: headerVisible ? 'auto' : 'none',
+        }}
+      >
+        <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
           {user?.name ?? user?.email ?? ''}
         </span>
         <LogoutButton />

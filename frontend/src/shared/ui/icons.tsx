@@ -38,13 +38,18 @@ import {
   Thermometer,
   Shield,
   User,
+  Users,
+  Group,
+  Command,
+  LayoutDashboard,
+  FileBarChart,
   Terminal,
   Camera,
   Zap,
   Droplets,
 } from 'lucide-react';
 
-interface IconProps {
+export interface IconProps {
   size?: number;
   style?: CSSProperties;
   className?: string;
@@ -223,4 +228,24 @@ export function IconZap({ size = defaultProps.size, style, className, color, str
 
 export function IconDroplets({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
   return <Droplets size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconUsers({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Users size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconGroup({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Group size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconCommand({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Command size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconLayoutDashboard({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <LayoutDashboard size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconFileBarChart({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <FileBarChart size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
 }

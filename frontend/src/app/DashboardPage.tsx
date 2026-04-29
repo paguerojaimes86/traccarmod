@@ -61,6 +61,7 @@ export function DashboardPage() {
 
           <button
             title={showRoutes ? 'Ocultar Rutas' : 'Mostrar Rutas'}
+            aria-pressed={showRoutes}
             style={{
               position: 'absolute',
               top: 12,
@@ -68,17 +69,17 @@ export function DashboardPage() {
               zIndex: 2,
               padding: '0.4rem 0.6rem',
               border: '1px solid',
-              borderColor: showRoutes ? 'var(--accent)' : 'rgba(15, 23, 42, 0.1)',
+              borderColor: showRoutes ? 'var(--color-primary)' : 'rgba(15, 23, 42, 0.1)',
               background: showRoutes ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.92)',
               borderRadius: '0.5rem',
               cursor: 'pointer',
-              color: showRoutes ? 'var(--accent)' : '#64748b',
+              color: showRoutes ? 'var(--color-primary)' : '#64748b',
               display: 'flex',
               alignItems: 'center',
               gap: '0.35rem',
               fontSize: '0.65rem',
               fontWeight: 700,
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              transition: 'border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease',
               boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
             }}
             onClick={() => setShowRoutes(!showRoutes)}

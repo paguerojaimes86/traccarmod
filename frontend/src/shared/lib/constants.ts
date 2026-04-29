@@ -9,11 +9,14 @@ export const QUERY_KEYS = {
   session: ['session'] as const,
   groups: ['groups'] as const,
   reports: ['reports'] as const,
+  users: ['users'] as const,
+  commands: ['commands'] as const,
+  server: ['server'] as const,
   // Alerts / Notifications / Events
   notifications: ['notifications'] as const,
   notificationTypes: ['notificationTypes'] as const,
   events: ['events'] as const,
-  reportEvents: (params: { deviceId?: number; type?: string; from: string; to: string }) =>
+  reportEvents: (params: { deviceId?: number | number[]; type?: string | string[]; from: string; to: string }) =>
     ['reportEvents', params] as const,
 } as const;
 
