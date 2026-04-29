@@ -5,7 +5,6 @@ import { DeviceListItem } from './DeviceListItem';
 import { useMapStore } from '@features/map/store';
 import { LoadingState } from '@shared/ui';
 import { ErrorState } from '@shared/ui';
-import { useUiStore } from '@shared/lib/ui-store';
 import { IconMenu, IconClose, IconSearch, IconNavigation, IconFileText, IconActivity, IconPlay, IconPause, IconEyeOff } from '@shared/ui/icons';
 import { WsStatusIndicator } from '@features/positions/components/WsStatusIndicator';
 
@@ -84,8 +83,8 @@ export function DeviceList() {
   const { data: positions = [] } = usePositions();
   const selectedDeviceId = useMapStore((s) => s.selectedDeviceId);
   const setShowMileageReport = useMapStore((s) => s.setShowMileageReport);
-  const sidebarOpen = useUiStore((s) => s.sidebarOpen);
-  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const toggleSidebar = () => setSidebarOpen((o) => !o);
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'moving' | 'stopped' | 'offline'>('all');
 
