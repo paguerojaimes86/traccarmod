@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useMapInstance } from '@features/map/context';
 import { useGeofences } from '@features/geofences/hooks/useGeofences';
-import { wktToMapLibreSource, isCircleWkt } from '@shared/lib/wkt';
+import { wktToMapLibreSourceUniversal } from '@shared/lib/wkt';
 
 const GEOFENCE_COLORS = [
   '#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6',
@@ -22,10 +22,9 @@ export function GeofenceLayers({ visible = true }: GeofenceLayersProps) {
 
     geofences.forEach((gf, i) => {
       if (!gf.area || !gf.id) return;
-      if (isCircleWkt(gf.area)) return;
       if ((gf.attributes as Record<string, string>)?.isRoute === 'true') return;
 
-      const geojson = wktToMapLibreSource(gf.area, {
+      const geojson = wktToMapLibreSourceUniversal(gf.area, {
         id: gf.id,
         name: gf.name,
       });
