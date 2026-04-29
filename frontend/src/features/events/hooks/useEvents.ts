@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { wsService } from '@features/positions/services/websocket';
 import type { EventMessage } from '@features/positions/services/websocket';
@@ -31,7 +31,7 @@ export function useEvents() {
 
   const deviceIds = useMemo(
     () => devices.map((d) => d.id).filter((id): id is number => id != null),
-    [devices]
+    [devices],
   );
 
   const { data: polledEvents } = useQuery({
@@ -65,7 +65,7 @@ export function useEvents() {
     if (!polledEvents || polledEvents.length === 0) return;
 
     const filtered = (polledEvents as EventMessage[]).filter(
-      (e) => activeEventTypes.size > 0 && activeEventTypes.has(e.type)
+      (e) => activeEventTypes.size > 0 && activeEventTypes.has(e.type),
     );
     if (filtered.length === 0) return;
 
@@ -77,20 +77,22 @@ export function useEvents() {
     addEvents(filtered);
   }, [polledEvents, addEvents, activeEventTypes]);
 
-  // WebSocket: real-time events
-  const handleEvents = useCallback((events: EventMessage[]) => {
-    const filtered = events.filter(
-      (e) => activeEventTypes.size > 0 && activeEventTypes.has(e.type)
-    );
-    if (filtered.length > 0) {
-      addEvents(filtered);
-    }
-    setIsActive(true);
-  }, [addEvents, activeEventTypes]);
+  // WebSocket: real-time events — single subscription using ref for filter
+  // This prevents unsubscribe/resubscribe cycles when activeEventTypes changes,
+  // which could cause missed events in the gap between unsub and re-sub.
+  const activeTypesRef = useRef(activeEventTypes);
+  activeTypesRef.current = activeEventTypes;
 
   useEffect(() => {
     const unsub = wsService.onEvent((events: EventMessage[]) => {
-      handleEvents(events);
+      const types = activeTypesRef.current;
+      const filtered = events.filter(
+        (e) => types.size > 0 && types.has(e.type),
+      );
+      if (filtered.length > 0) {
+        addEvents(filtered);
+      }
+      setIsActive(true);
     });
 
     const unsubStatus = wsService.onStatus((status) => {
@@ -105,7 +107,8 @@ export function useEvents() {
       unsub();
       unsubStatus();
     };
-  }, [handleEvents]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: single subscription, ref handles filter
+  }, []);
 
   return { isActive };
 }
