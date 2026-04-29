@@ -83,23 +83,23 @@ describe('formatDuration', () => {
 });
 
 describe('timeAgo', () => {
-  it('returns "just now" for recent timestamps', () => {
+  it('returns "ahora mismo" for recent timestamps', () => {
     const now = new Date().toISOString();
-    expect(timeAgo(now)).toBe('just now');
+    expect(timeAgo(now)).toBe('ahora mismo');
   });
 
   it('returns minutes ago', () => {
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    expect(timeAgo(fiveMinAgo)).toBe('5m ago');
+    expect(timeAgo(fiveMinAgo)).toBe('hace 5m');
   });
 
   it('returns hours ago', () => {
     const twoHoursAgo = new Date(Date.now() - 2 * 3600 * 1000).toISOString();
-    expect(timeAgo(twoHoursAgo)).toBe('2h ago');
+    expect(timeAgo(twoHoursAgo)).toBe('hace 2h');
   });
 
   it('returns days ago', () => {
     const threeDaysAgo = new Date(Date.now() - 3 * 86400 * 1000).toISOString();
-    expect(timeAgo(threeDaysAgo)).toBe('3d ago');
+    expect(timeAgo(threeDaysAgo)).toBe('hace 3d');
   });
 });

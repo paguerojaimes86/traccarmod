@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useDeleteDevice } from './useDeleteDevice';
 import { apiClient } from '@shared/api/client';
+import { QUERY_KEYS } from '@shared/lib/constants';
 
 vi.mock('@shared/api/client', () => ({
   apiClient: {
@@ -42,16 +43,26 @@ describe('useDeleteDevice', () => {
     });
   });
 
-  it('invalidates devices query on success', async () => {
+  it('uses optimistic update — removes device from cache without invalidation', async () => {
     (apiClient.DELETE as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ error: undefined });
 
     const { queryClient, wrapper } = createWrapper();
-    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+    // Seed initial cache
+    queryClient.setQueryData(QUERY_KEYS.devices, [
+      { id: 42, name: 'To Delete', uniqueId: '042' },
+      { id: 99, name: 'Keep', uniqueId: '099' },
+    ]);
+
     const { result } = renderHook(() => useDeleteDevice(), { wrapper });
 
     result.current.mutate(42);
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['devices'] });
+
+    // Cache should only have the remaining device
+    const cached = queryClient.getQueryData(QUERY_KEYS.devices) as { id: number }[];
+    expect(cached).toHaveLength(1);
+    expect(cached.find((d) => d.id === 42)).toBeUndefined();
+    expect(cached.find((d) => d.id === 99)).toBeTruthy();
   });
 });

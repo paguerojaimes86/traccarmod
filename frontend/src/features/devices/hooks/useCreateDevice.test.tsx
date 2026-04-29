@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useCreateDevice } from './useCreateDevice';
 import { apiClient } from '@shared/api/client';
+import { QUERY_KEYS } from '@shared/lib/constants';
 
 vi.mock('@shared/api/client', () => ({
   apiClient: {
@@ -44,17 +45,25 @@ describe('useCreateDevice', () => {
     expect(result.current.data).toEqual(mockDevice);
   });
 
-  it('invalidates devices query on success', async () => {
+  it('uses optimistic update — adds device to cache without invalidation', async () => {
     const mockDevice = { id: 1, name: 'Test Device', uniqueId: '123' };
     (apiClient.POST as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ data: mockDevice, error: undefined });
 
     const { queryClient, wrapper } = createWrapper();
-    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+    // Seed initial cache
+    queryClient.setQueryData(QUERY_KEYS.devices, [
+      { id: 99, name: 'Existing', uniqueId: '999' },
+    ]);
+
     const { result } = renderHook(() => useCreateDevice(), { wrapper });
 
     result.current.mutate({ name: 'Test Device', uniqueId: '123' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['devices'] });
+
+    // Cache should now include both devices (optimistic update)
+    const cached = queryClient.getQueryData(QUERY_KEYS.devices) as { id: number }[];
+    expect(cached).toHaveLength(2);
+    expect(cached.find((d) => d.id === 1)).toBeTruthy();
   });
 });

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useUpdateDevice } from './useUpdateDevice';
 import { apiClient } from '@shared/api/client';
+import { QUERY_KEYS } from '@shared/lib/constants';
 
 vi.mock('@shared/api/client', () => ({
   apiClient: {
@@ -45,17 +46,27 @@ describe('useUpdateDevice', () => {
     expect(result.current.data).toEqual(mockDevice);
   });
 
-  it('invalidates devices query on success', async () => {
+  it('uses optimistic update — updates device in cache without invalidation', async () => {
     const mockDevice = { id: 1, name: 'Updated Device', uniqueId: '123' };
     (apiClient.PUT as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ data: mockDevice, error: undefined });
 
     const { queryClient, wrapper } = createWrapper();
-    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+    // Seed initial cache
+    queryClient.setQueryData(QUERY_KEYS.devices, [
+      { id: 1, name: 'Old Name', uniqueId: '123' },
+      { id: 2, name: 'Other', uniqueId: '456' },
+    ]);
+
     const { result } = renderHook(() => useUpdateDevice(), { wrapper });
 
     result.current.mutate({ id: 1, name: 'Updated Device' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['devices'] });
+
+    // Cache should have the updated name
+    const cached = queryClient.getQueryData(QUERY_KEYS.devices) as { id: number; name: string }[];
+    const updated = cached.find((d) => d.id === 1);
+    expect(updated?.name).toBe('Updated Device');
+    expect(cached).toHaveLength(2); // No extra devices added
   });
 });
