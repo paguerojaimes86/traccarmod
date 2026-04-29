@@ -17,3 +17,15 @@ src/shared/api/generated/*
 
 *.log
 npm-debug.log*
+
+# AI agent configs (personal, not shared)
+.agents/
+.claude/
+.codebuddy/
+.continue/
+frontend/.agents/
+frontend/.claude/
+frontend/.codebuddy/
+frontend/.continue/
+skills-lock.json
+frontend/skills-lock.json
