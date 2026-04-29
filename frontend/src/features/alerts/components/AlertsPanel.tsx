@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, type CSSProperties } from 'react';
+import { Link } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@shared/lib/constants';
 import type { PositionMessage } from '@features/positions/services/websocket';
@@ -55,11 +56,11 @@ const badgeStyle = (count: number): CSSProperties => ({
   height: '1.25rem',
   padding: '0 0.375rem',
   borderRadius: '9999px',
-  backgroundColor: count > 0 ? '#ef4444' : 'rgba(15, 23, 42, 0.06)',
-  color: count > 0 ? '#fff' : '#94a3b8',
+  backgroundColor: count > 0 ? 'var(--color-error)' : 'rgba(15, 23, 42, 0.06)',
+  color: count > 0 ? 'var(--text-inverse)' : 'var(--text-muted)',
   fontSize: '0.625rem',
   fontWeight: 700,
-  fontFamily: 'Outfit',
+  fontFamily: 'var(--font-family-base)',
 });
 
 const filterButtonStyle = (isActive: boolean, color: string): CSSProperties => ({
@@ -67,7 +68,7 @@ const filterButtonStyle = (isActive: boolean, color: string): CSSProperties => (
   padding: '0.4rem 0.6rem',
   borderRadius: '0.85rem',
   border: '1px solid',
-  borderColor: isActive ? `${color}50` : 'rgba(15, 23, 42, 0.06)',
+  borderColor: isActive ? `${color}50` : 'var(--border-default)',
   background: isActive
     ? `linear-gradient(135deg, ${color}18, rgba(255, 255, 255, 0.6))`
     : 'rgba(15, 23, 42, 0.02)',
@@ -77,11 +78,11 @@ const filterButtonStyle = (isActive: boolean, color: string): CSSProperties => (
   alignItems: 'center',
   justifyContent: 'center',
   gap: '0.35rem',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease',
   boxShadow: isActive ? `0 0 18px -8px ${color}` : 'none',
   fontSize: '0.7rem',
   fontWeight: 700,
-  fontFamily: 'Outfit',
+  fontFamily: 'var(--font-family-base)',
 });
 
 const createButtonStyle: CSSProperties = {
@@ -93,14 +94,14 @@ const createButtonStyle: CSSProperties = {
   padding: '0.75rem 1rem',
   margin: '0.5rem 0.75rem 0.75rem',
   borderRadius: '0.875rem',
-  border: '1px solid rgba(99, 102, 241, 0.2)',
+  border: '1px solid var(--color-primary-border)',
   background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05))',
-  color: '#6366f1',
+  color: 'var(--color-primary)',
   fontSize: '0.8125rem',
   fontWeight: 600,
-  fontFamily: 'Outfit',
+  fontFamily: 'var(--font-family-base)',
   cursor: 'pointer',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
 };
 
 const collapseButtonStyle: CSSProperties = {
@@ -113,7 +114,7 @@ const collapseButtonStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'all 0.2s',
+  transition: 'color 0.2s ease, background-color 0.2s ease',
 };
 
 const tabStyle = (active: boolean): CSSProperties => ({
@@ -121,13 +122,13 @@ const tabStyle = (active: boolean): CSSProperties => ({
   padding: '0.5rem',
   border: 'none',
   background: active ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-  color: active ? '#6366f1' : '#64748b',
+  color: active ? 'var(--color-primary)' : '#64748b',
   fontWeight: 600,
-  fontFamily: 'Outfit',
+  fontFamily: 'var(--font-family-base)',
   fontSize: '0.75rem',
   cursor: 'pointer',
   borderRadius: '0.625rem',
-  transition: 'all 0.2s',
+  transition: 'background-color 0.2s ease, color 0.2s ease',
 });
 
 const notifItemStyle: CSSProperties = {
@@ -235,24 +236,24 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
           width: 'auto',
           padding: '0.625rem 1rem',
           borderRadius: '1.25rem',
-          border: '1px solid rgba(15, 23, 42, 0.06)',
+          border: '1px solid var(--border-default)',
           backgroundColor: 'rgba(255, 255, 255, 0.92)',
           backdropFilter: 'blur(16px)',
-          color: '#0f172a',
+          color: 'var(--text-primary)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
           fontSize: '0.8125rem',
           fontWeight: 600,
-          fontFamily: 'Outfit',
+          fontFamily: 'var(--font-family-base)',
           boxShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
-          transition: 'all 0.2s',
+          transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
           alignSelf: 'flex-start',
         }}
         onClick={() => setCollapsed(false)}
       >
-        <IconBell size={16} color="#ef4444" />
+        <IconBell size={16} color="var(--color-error)" />
         <span>Alertas</span>
         {filterCounts.all > 0 && <span style={badgeStyle(filterCounts.all)}>{filterCounts.all}</span>}
       </button>
@@ -381,73 +382,83 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
       )}
 
       {tab === 'configured' && (
-      <ul style={listStyle} className="custom-scrollbar">
-        {notifications.map((n) => {
-          const config = getAlertConfig(n.type ?? '');
-          const typeLabel = config.label || n.type || 'Desconocido';
-          const typeColor = config.color || '#6b7280';
-          const typeIcon = config.icon || '🔔';
-          const channels: string[] = [];
-          if (n.notificators?.includes('web')) channels.push('Web');
-          if (n.notificators?.includes('mail')) channels.push('Email');
-          if (n.notificators?.includes('sms')) channels.push('SMS');
-          const channelLabel = channels.length > 0 ? channels.join(', ') : 'Web';
-          return (
-            <li
-              key={n.id}
-              style={notifItemStyle}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.03)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
-            >
-              <div style={{
-                padding: '0.375rem',
-                borderRadius: '0.625rem',
-                backgroundColor: `${typeColor}18`,
-                color: typeColor,
-                border: `1px solid ${typeColor}30`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1rem',
-                flexShrink: 0,
-              }}>
-                {typeIcon}
-              </div>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontFamily: 'Outfit', fontSize: '0.8125rem', fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {typeLabel}
+      <>
+        <ul style={listStyle} className="custom-scrollbar">
+          {notifications.map((n) => {
+            const config = getAlertConfig(n.type ?? '');
+            const typeLabel = config.label || n.type || 'Desconocido';
+            const typeColor = config.color || '#6b7280';
+            const typeIcon = config.icon || '🔔';
+            const channels: string[] = [];
+            if (n.notificators?.includes('web')) channels.push('Web');
+            if (n.notificators?.includes('mail')) channels.push('Email');
+            if (n.notificators?.includes('sms')) channels.push('SMS');
+            const channelLabel = channels.length > 0 ? channels.join(', ') : 'Web';
+            return (
+              <li
+                key={n.id}
+                style={notifItemStyle}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.03)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
+              >
+                <div style={{
+                  padding: '0.375rem',
+                  borderRadius: '0.625rem',
+                  backgroundColor: `${typeColor}18`,
+                  color: typeColor,
+                  border: `1px solid ${typeColor}30`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1rem',
+                  flexShrink: 0,
+                }}>
+                  {typeIcon}
                 </div>
-                <div style={{ fontSize: '0.6875rem', color: '#94a3b8', display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
-                  <span>{channelLabel}</span>
-                  <span style={{ color: 'rgba(15, 23, 42, 0.15)' }}>·</span>
-                  <span>{n.always ? 'Siempre' : 'Programado'}</span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontFamily: 'Outfit', fontSize: '0.8125rem', fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {typeLabel}
+                  </div>
+                  <div style={{ fontSize: '0.6875rem', color: '#94a3b8', display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+                    <span>{channelLabel}</span>
+                    <span style={{ color: 'rgba(15, 23, 42, 0.15)' }}>·</span>
+                    <span>{n.always ? 'Siempre' : 'Programado'}</span>
+                  </div>
                 </div>
-              </div>
-              {canDeleteAlerts && (
-                <button
-                  style={notifDeleteBtn}
-                  onClick={() => {
-                    if (n.id) {
-                      deleteNotification.mutate(n.id);
-                    }
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; }}
-                  title="Eliminar notificación"
-                >
-                  <IconClose size={14} />
-                </button>
-              )}
+                {canDeleteAlerts && (
+                  <button
+                    style={notifDeleteBtn}
+                    onClick={() => {
+                      if (n.id) {
+                        deleteNotification.mutate(n.id);
+                      }
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; }}
+                    title="Eliminar notificación"
+                  >
+                    <IconClose size={14} />
+                  </button>
+                )}
+              </li>
+            );
+          })}
+          {notifications.length === 0 && (
+            <li style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.8125rem' }}>
+              <div style={{ marginBottom: '0.5rem', opacity: 0.5 }}>⚙️</div>
+              Sin alertas configuradas
             </li>
-          );
-        })}
-        {notifications.length === 0 && (
-          <li style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.8125rem' }}>
-            <div style={{ marginBottom: '0.5rem', opacity: 0.5 }}>⚙️</div>
-            Sin alertas configuradas
-          </li>
-        )}
-      </ul>
+          )}
+        </ul>
+        <div style={{ padding: '0.5rem 0.75rem', textAlign: 'center' }}>
+          <Link
+            to="/alerts"
+            style={{ color: '#6366f1', fontSize: '0.75rem', fontWeight: 600, textDecoration: 'none', fontFamily: 'Outfit' }}
+          >
+            Ver todas las alertas →
+          </Link>
+        </div>
+      </>
       )}
 
       <style>{`

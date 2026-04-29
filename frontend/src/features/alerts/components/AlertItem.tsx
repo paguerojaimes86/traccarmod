@@ -37,7 +37,7 @@ const itemStyle = (isHovered: boolean): CSSProperties => ({
   cursor: 'pointer',
   backgroundColor: isHovered ? 'rgba(15, 23, 42, 0.04)' : 'transparent',
   border: '1px solid transparent',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'background-color 0.2s ease, border-color 0.2s ease',
 });
 
 const iconContainerStyle = (color: string): CSSProperties => ({
@@ -77,11 +77,11 @@ const deleteButtonStyle: CSSProperties = {
   background: 'transparent',
   borderRadius: '0.375rem',
   cursor: 'pointer',
-  color: '#94a3b8',
+  color: 'var(--text-muted)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'all 0.2s',
+  transition: 'color 0.2s ease, background-color 0.2s ease',
   flexShrink: 0,
 };
 

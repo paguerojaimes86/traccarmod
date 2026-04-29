@@ -19,14 +19,13 @@ const toastStyle = (color: string): CSSProperties => ({
   borderRadius: '0.875rem',
   backgroundColor: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(16px)',
-  border: '1px solid rgba(15, 23, 42, 0.08)',
+  border: '1px solid var(--border-default)',
   borderLeft: `3px solid ${color}`,
   boxShadow: '0 8px 32px rgba(15, 23, 42, 0.12)',
   cursor: 'pointer',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease',
   maxWidth: '360px',
   width: '100%',
-  animation: 'slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 });
 
 const iconContainerStyle = (color: string): CSSProperties => ({

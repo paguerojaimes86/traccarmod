@@ -13,6 +13,9 @@ interface AlertWizardProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  /** When true, the wizard runs in standalone mode (outside DashboardPage context).
+   *  Currently a no-op prop reserved for future extensibility. */
+  standalone?: boolean;
 }
 
 const overlayStyle: CSSProperties = {
@@ -141,7 +144,7 @@ const initialConfig: AlertWizardConfig = {
   deviceIds: [],
 };
 
-export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
+export function AlertWizard({ open, onClose, onSuccess, standalone }: AlertWizardProps) {
   const [step, setStep] = useState(1);
   const [config, setConfig] = useState<AlertWizardConfig>(initialConfig);
   const [error, setError] = useState<string | null>(null);
