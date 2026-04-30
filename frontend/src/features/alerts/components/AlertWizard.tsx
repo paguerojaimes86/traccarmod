@@ -144,7 +144,7 @@ const initialConfig: AlertWizardConfig = {
   deviceIds: [],
 };
 
-export function AlertWizard({ open, onClose, onSuccess, standalone }: AlertWizardProps) {
+export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
   const [step, setStep] = useState(1);
   const [config, setConfig] = useState<AlertWizardConfig>(initialConfig);
   const [error, setError] = useState<string | null>(null);

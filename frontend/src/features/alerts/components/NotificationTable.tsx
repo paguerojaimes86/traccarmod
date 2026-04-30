@@ -2,7 +2,7 @@ import { useState, useMemo, type CSSProperties } from 'react';
 import { Pencil } from 'lucide-react';
 import { IconSearch, IconTrash2 } from '@shared/ui/icons';
 import { LoadingState, ErrorState } from '@shared/ui';
-import { getAlertConfig, ALERT_TYPE_CONFIG, ALARM_SUBTYPES } from '@shared/lib/alert-types';
+import { getAlertConfig } from '@shared/lib/alert-types';
 import type { Notification } from '@shared/api/types.models';
 
 interface NotificationTableProps {

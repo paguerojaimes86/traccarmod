@@ -45,14 +45,6 @@ const cardStyle: CSSProperties = {
   padding: '2rem',
 };
 
-const titleStyle: CSSProperties = {
-  fontFamily: 'Outfit',
-  fontSize: '1.125rem',
-  fontWeight: 700,
-  color: '#0f172a',
-  margin: '0 0 1.5rem 0',
-};
-
 const labelStyle: CSSProperties = {
   display: 'block',
   fontFamily: 'Outfit',

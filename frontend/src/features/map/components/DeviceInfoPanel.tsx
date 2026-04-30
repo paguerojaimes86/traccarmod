@@ -1,4 +1,4 @@
-import { memo, useMemo, type CSSProperties } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { useMapStore } from '@features/map/store';
 import { useDevices } from '@features/devices/hooks/useDevices';
 import { useDevicePosition } from '@features/positions/hooks/usePositions';
@@ -19,7 +19,6 @@ import {
   IconEyeOff
 } from '@shared/ui/icons';
 import type { Device } from '@shared/api/types.models';
-import type { Position } from '@shared/api/types.models';
 
 type PositionAttributes = Record<string, unknown>;
 

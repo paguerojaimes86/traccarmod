@@ -1,7 +1,7 @@
 import { useState, type CSSProperties } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePermissions } from '@shared/permissions';
-import { useNotifications, useCreateNotification, useUpdateNotification, useDeleteNotification } from '@features/notifications/hooks/useNotifications';
+import { useNotifications, useUpdateNotification, useDeleteNotification } from '@features/notifications/hooks/useNotifications';
 import { NotificationTable } from '@features/alerts/components/NotificationTable';
 import { NotificationEditForm } from '@features/alerts/components/NotificationEditForm';
 import { AlertWizard } from '@features/alerts/components/AlertWizard';

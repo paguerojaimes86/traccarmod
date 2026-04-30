@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, type CSSProperties } from 'react';
+import { useState, useMemo, type CSSProperties } from 'react';
 import { Pencil } from 'lucide-react';
 import { IconSearch, IconTrash2 } from '@shared/ui/icons';
 import { LoadingState, ErrorState } from '@shared/ui';

@@ -53,8 +53,11 @@ export function useLinkedDeviceIds(notificationId: number | null | undefined) {
         );
 
         for (const result of results) {
-          if (result.status === 'fulfilled' && result.result != null) {
-            deviceIds.push(result.result);
+          if (result.status === 'fulfilled') {
+            const value = (result as unknown as { result: number | null }).result;
+            if (value != null) {
+              deviceIds.push(value);
+            }
           }
         }
       }

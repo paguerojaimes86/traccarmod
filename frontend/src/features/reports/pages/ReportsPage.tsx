@@ -1,13 +1,11 @@
 import { useState, useMemo, useCallback, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router';
 import { useDevices } from '@features/devices/hooks/useDevices';
-import { useGeofences } from '@features/geofences/hooks/useGeofences';
 import { useSummaryReport } from '../hooks/useSummaryReport';
 import { useTripsReport } from '../hooks/useTripsReport';
 import { useStopsReport } from '../hooks/useStopsReport';
 import { useRouteReport } from '../hooks/useRouteReport';
 import { useEventsReport } from '../hooks/useEventsReport';
-import { useGeofencesReport } from '../hooks/useGeofencesReport';
 import { useMapStore } from '@features/map/store';
 import { getAlertConfig, ALERT_TYPE_CONFIG } from '@shared/lib/alert-types';
 import { LoadingState, ErrorState } from '@shared/ui';
@@ -52,13 +50,6 @@ function startOfMonth(d: Date): Date {
   const date = new Date(d.getFullYear(), d.getMonth(), 1);
   date.setHours(0, 0, 0, 0);
   return date;
-}
-
-function formatDuration(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
 }
 
 // ─── Styles ─────────────────────────────────────────
@@ -191,17 +182,14 @@ const allCategories = ['status', 'movement', 'geofence', 'speed', 'alarm', 'main
 export function ReportsPage() {
   const navigate = useNavigate();
   const { data: devices = [] } = useDevices();
-  const { data: geofences = [] } = useGeofences();
   const [tab, setTab] = useState<ReportTab>('mileage');
   const [range, setRange] = useState<ReportRange>('today');
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
   const [selectedDeviceIds, setSelectedDeviceIds] = useState<number[]>([]);
   const [eventFilter, setEventFilter] = useState<string>('all');
-  const [selectedGeofenceIds, setSelectedGeofenceIds] = useState<number[]>([]);
 
   const allDevicesSelected = selectedDeviceIds.length === 0;
-  const allGeofencesSelected = selectedGeofenceIds.length === 0;
 
   const reportParams = useMemo(() => {
     if (devices.length === 0) return null;
@@ -231,14 +219,6 @@ export function ReportsPage() {
     return { deviceId: idFilter, from: from.toISOString(), to: to.toISOString() };
   }, [devices, range, customFrom, customTo, selectedDeviceIds, allDevicesSelected]);
 
-  const geofenceParams = useMemo(() => {
-    if (!reportParams) return null;
-    return {
-      ...reportParams,
-      geofenceId: allGeofencesSelected ? undefined : selectedGeofenceIds,
-    };
-  }, [reportParams, selectedGeofenceIds, allGeofencesSelected]);
-
   const eventsParams = useMemo(() => {
     if (!reportParams) return null;
     const typeFilter = eventFilter === 'all' ? undefined : [eventFilter];
@@ -262,16 +242,9 @@ export function ReportsPage() {
   const reportData = rawData ?? [];
   const hasData = reportData.length > 0;
   const deviceMap = useMemo(() => new Map(devices.map(d => [d.id, d])), [devices]);
-  const geofenceMap = useMemo(() => new Map(geofences.map(g => [g.id, g])), [geofences]);
 
   const toggleDevice = useCallback((id: number) => {
     setSelectedDeviceIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  }, []);
-
-  const toggleGeofence = useCallback((id: number) => {
-    setSelectedGeofenceIds(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   }, []);
@@ -338,17 +311,6 @@ export function ReportsPage() {
           'Fecha': row.eventTime ? new Date(row.eventTime).toLocaleString() : '',
           'Dirección': row.address ?? '',
         };
-      } else {
-        const gf = geofenceMap.get(row.geofenceId);
-        return {
-          ...base,
-          'Geocerca': gf?.name ?? `#${row.geofenceId}`,
-          'Entrada': row.startTime ? new Date(row.startTime).toLocaleString() : '',
-          'Salida': row.endTime ? new Date(row.endTime).toLocaleString() : '',
-          'Duración': row.startTime && row.endTime
-            ? formatDuration((new Date(row.endTime).getTime() - new Date(row.startTime).getTime()) / 1000)
-            : '—',
-        };
       }
     });
 
@@ -357,7 +319,7 @@ export function ReportsPage() {
     XLSX.utils.book_append_sheet(wb, ws, 'Reporte');
     const date = new Date().toISOString().slice(0, 10);
     XLSX.writeFile(wb, `reporte_${tab}_${date}.xlsx`);
-  }, [reportData, deviceMap, geofenceMap, tab, hasData]);
+  }, [reportData, deviceMap, tab, hasData]);
 
   // ─── Route summary (per device) ──────────────────
 
@@ -366,6 +328,7 @@ export function ReportsPage() {
     const byDevice = new Map<number, any[]>();
     for (const pos of reportData) {
       const id = pos.deviceId;
+      if (id == null) continue;
       if (!byDevice.has(id)) byDevice.set(id, []);
       byDevice.get(id)!.push(pos);
     }
@@ -619,60 +582,6 @@ export function ReportsPage() {
         </div>
       )}
 
-      {/* Geofence Quick Select (only for geofences tab) */}
-      {tab === 'geofences' && geofences.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '1rem', padding: '0.625rem', borderRadius: '0.875rem', backgroundColor: 'rgba(15, 23, 42, 0.02)', border: '1px solid rgba(15, 23, 42, 0.04)' }}>
-          <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#94a3b8', fontFamily: 'Outfit, sans-serif', marginRight: '0.25rem' }}>GEOCERCA:</span>
-          <button
-            onClick={() => setSelectedGeofenceIds([])}
-            style={{
-              padding: '0.3rem 0.75rem',
-              borderRadius: '0.75rem',
-              border: '1px solid',
-              borderColor: allGeofencesSelected ? 'rgba(99, 102, 241, 0.4)' : 'rgba(15, 23, 42, 0.06)',
-              background: allGeofencesSelected ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
-              color: allGeofencesSelected ? '#6366f1' : '#64748b',
-              fontSize: '0.6875rem',
-              fontWeight: 800,
-              fontFamily: 'Outfit, sans-serif',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            TODAS
-          </button>
-          {geofences.slice(0, 10).map(g => {
-            const id = g.id!;
-            const isSelected = !allGeofencesSelected && selectedGeofenceIds.includes(id);
-            return (
-              <button
-                key={id}
-                onClick={() => toggleGeofence(id)}
-                style={{
-                  padding: '0.3rem 0.625rem',
-                  borderRadius: '0.75rem',
-                  border: '1px solid',
-                  borderColor: isSelected ? 'rgba(99, 102, 241, 0.4)' : 'rgba(15, 23, 42, 0.06)',
-                  background: isSelected ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                  color: isSelected ? '#6366f1' : '#94a3b8',
-                  fontSize: '0.6875rem',
-                  fontWeight: isSelected ? 800 : 600,
-                  fontFamily: 'Outfit, sans-serif',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  maxWidth: 140,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {g.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       {/* Data Table */}
       {isFetching ? (
         <div style={{ padding: '5rem 0' }}><LoadingState message="Cargando reporte..." /></div>
@@ -731,15 +640,6 @@ export function ReportsPage() {
                   <th style={tableHeaderStyle()}>Tipo</th>
                   <th style={tableHeaderStyle()}>Categoría</th>
                   <th style={tableHeaderStyle()}>Hora</th>
-                </>
-              )}
-              {tab === 'geofences' && (
-                <>
-                  <th style={tableHeaderStyle()}>Vehículo</th>
-                  <th style={tableHeaderStyle()}>Geocerca</th>
-                  <th style={tableHeaderStyle()}>Entrada</th>
-                  <th style={tableHeaderStyle()}>Salida</th>
-                  <th style={tableHeaderStyle()}>Duración</th>
                 </>
               )}
             </tr>
@@ -912,39 +812,6 @@ export function ReportsPage() {
                   <td style={{ ...tdStyle, borderTopRightRadius: '0.75rem', borderBottomRightRadius: '0.75rem', borderRight: '1px solid rgba(15, 23, 42, 0.04)' }}>
                     <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0f172a' }}>{row.eventTime ? new Date(row.eventTime).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
                     <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{row.eventTime ? new Date(row.eventTime).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' }) : ''}</div>
-                  </td>
-                </tr>
-              );
-            })}
-
-            {/* ── Geofences rows ── */}
-            {tab === 'geofences' && reportData.map((row: any, i: number) => {
-              const device = deviceMap.get(row.deviceId);
-              const gf = geofenceMap.get(row.geofenceId);
-              const durationMs = row.startTime && row.endTime
-                ? new Date(row.endTime).getTime() - new Date(row.startTime).getTime()
-                : 0;
-              return (
-                <tr key={`${row.deviceId}-${row.geofenceId}-${i}`} className="report-row" style={{ backgroundColor: 'rgba(15, 23, 42, 0.02)' }}>
-                  <td style={{ ...tdStyle, borderTopLeftRadius: '0.75rem', borderBottomLeftRadius: '0.75rem', borderLeft: '1px solid rgba(15, 23, 42, 0.04)' }}>
-                    <div style={{ fontWeight: 700, color: '#0f172a', fontFamily: 'Outfit', fontSize: '0.8125rem' }}>{device?.name ?? '—'}</div>
-                    <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600 }}>TID: {device?.uniqueId ?? '—'}</div>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#0f172a', fontFamily: 'Outfit' }}>{gf?.name ?? `Geocerca #${row.geofenceId}`}</span>
-                  </td>
-                  <td style={tdStyle}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0f172a' }}>{row.startTime ? new Date(row.startTime).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
-                    <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{row.startTime ? new Date(row.startTime).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' }) : ''}</div>
-                  </td>
-                  <td style={tdStyle}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0f172a' }}>{row.endTime ? new Date(row.endTime).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
-                    <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{row.endTime ? new Date(row.endTime).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' }) : ''}</div>
-                  </td>
-                  <td style={{ ...tdStyle, borderTopRightRadius: '0.75rem', borderBottomRightRadius: '0.75rem', borderRight: '1px solid rgba(15, 23, 42, 0.04)' }}>
-                    <div style={pillStyle('#8b5cf6')}>
-                      {durationMs > 0 ? formatDuration(durationMs / 1000) : '—'}
-                    </div>
                   </td>
                 </tr>
               );

@@ -145,7 +145,7 @@ export function GeofenceDrawMap({
           }
           
           draw.setMode('select');
-          console.log('[GeofenceDrawMap] snapshot after setMode(select):', draw.getSnapshot().map(f => ({ id: f.id, type: f.geometry.type, selected: f.properties?.selected })));
+          console.log('[GeofenceDrawMap] snapshot after setMode(select):', draw.getSnapshot().map((f: any) => ({ id: f.id, type: f.geometry.type, selected: f.properties?.selected })));
 
           // fitBounds using swapped coords which are now [lon, lat]
           const coords = (swapped as any).coordinates[0];
@@ -245,11 +245,11 @@ export function GeofenceDrawMap({
 
       console.log('[GeofenceDrawMap] TerraDraw started, draw instance:', !!draw);
 
-      draw.on('change', (_ids) => {
+      draw.on('change', (_ids: (string | number)[]) => {
         // Only process changes that are actual edits, not selection changes
         const snapshot = draw.getSnapshot();
         // Filter out coordinate-point helper features that TerraDraw injects
-        const realFeatures = snapshot.filter((f) => f.geometry.type !== 'Point');
+        const realFeatures = snapshot.filter((f: any) => f.geometry.type !== 'Point');
         if (realFeatures.length === 0) {
           handleWktChange(null);
           return;
