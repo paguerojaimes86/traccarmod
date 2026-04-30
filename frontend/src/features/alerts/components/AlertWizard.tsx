@@ -5,7 +5,7 @@ import { AlertDeviceSelect } from './AlertDeviceSelect';
 import { useCreateNotification } from '@features/notifications/hooks/useNotifications';
 import { useLinkNotification } from '@features/notifications/hooks/useLinkNotification';
 import type { AlertWizardConfig } from '@shared/lib/alert-types';
-import { hasConfigRequirements } from '@shared/lib/alert-types';
+import { hasConfigRequirements, getAlertConfig } from '@shared/lib/alert-types';
 import { alertsDebug, alertsWarn } from '@shared/lib/debug';
 import { IconArrowLeft, IconCheck } from '@shared/ui/icons';
 
@@ -13,11 +13,10 @@ interface AlertWizardProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  /** When true, the wizard runs in standalone mode (outside DashboardPage context).
-   *  Currently a no-op prop reserved for future extensibility. */
   standalone?: boolean;
 }
 
+// ─── Overlay & Card ───────────────────────────────────────────────
 const overlayStyle: CSSProperties = {
   position: 'fixed',
   inset: 0,
@@ -25,117 +24,191 @@ const overlayStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: 'rgba(15, 23, 42, 0.5)',
-  backdropFilter: 'blur(4px)',
+  backgroundColor: 'rgba(2, 6, 23, 0.6)',
+  backdropFilter: 'blur(8px)',
+  animation: 'wizardFadeIn 0.2s ease-out',
 };
 
 const cardStyle: CSSProperties = {
-  width: '480px',
-  maxWidth: '90vw',
-  maxHeight: '85vh',
+  width: '520px',
+  maxWidth: '92vw',
+  maxHeight: '88vh',
   overflowY: 'auto',
-  borderRadius: '1.25rem',
-  backgroundColor: 'rgba(255, 255, 255, 0.92)',
-  backdropFilter: 'blur(16px)',
+  borderRadius: '1.5rem',
+  backgroundColor: '#fff',
   border: '1px solid rgba(15, 23, 42, 0.06)',
-  boxShadow: '0 20px 60px rgba(15, 23, 42, 0.15)',
-  padding: '2rem',
+  boxShadow:
+    '0 0 0 1px rgba(0,0,0,0.03), 0 8px 24px rgba(0,0,0,0.08), 0 24px 60px rgba(0,0,0,0.12)',
+  padding: '0',
+  animation: 'wizardSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+  position: 'relative',
 };
 
-const stepIndicatorStyle = (isActive: boolean, isCompleted: boolean): CSSProperties => ({
-  width: '2rem',
-  height: '2rem',
+// ─── Step Indicator ───────────────────────────────────────────────
+const stepIndicatorStyle = (isActive: boolean, isCompleted: boolean, accentColor: string): CSSProperties => ({
+  width: '2.25rem',
+  height: '2.25rem',
   borderRadius: '9999px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   fontSize: '0.75rem',
   fontWeight: 700,
-  fontFamily: 'Outfit',
+  fontFamily: "'Inter', system-ui, sans-serif",
   backgroundColor: isCompleted
-    ? '#10b981'
+    ? accentColor
     : isActive
-      ? '#6366f1'
-      : 'rgba(15, 23, 42, 0.06)',
+      ? accentColor
+      : 'rgba(15, 23, 42, 0.04)',
   color: isCompleted || isActive ? '#fff' : '#94a3b8',
-  transition: 'all 0.3s',
+  transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: isActive ? `0 0 0 4px ${accentColor}20` : 'none',
+  transform: isActive ? 'scale(1.05)' : 'scale(1)',
 });
 
-const stepLineStyle = (isCompleted: boolean): CSSProperties => ({
+const stepLineStyle = (isCompleted: boolean, accentColor: string): CSSProperties => ({
   flex: 1,
   height: '2px',
-  backgroundColor: isCompleted ? '#10b981' : 'rgba(15, 23, 42, 0.08)',
-  transition: 'background-color 0.3s',
+  backgroundColor: isCompleted ? accentColor : 'rgba(15, 23, 42, 0.06)',
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  borderRadius: '1px',
 });
 
 const stepLabelStyle = (isActive: boolean): CSSProperties => ({
   fontSize: '0.625rem',
-  color: isActive ? '#6366f1' : '#94a3b8',
-  fontWeight: 600,
-  fontFamily: 'Outfit',
+  color: isActive ? '#0f172a' : '#94a3b8',
+  fontWeight: isActive ? 700 : 500,
+  fontFamily: "'Inter', system-ui, sans-serif",
   textAlign: 'center',
-  marginTop: '0.25rem',
+  marginTop: '0.375rem',
+  transition: 'color 0.3s',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
 });
 
-const titleStyle: CSSProperties = {
-  fontFamily: 'Outfit',
-  fontSize: '1.125rem',
-  fontWeight: 700,
-  color: '#0f172a',
-  margin: '0 0 1.5rem 0',
+// ─── Typography ───────────────────────────────────────────────────
+const headerStyle: CSSProperties = {
+  padding: '1.75rem 2rem 0',
 };
 
+const titleStyle: CSSProperties = {
+  fontFamily: "'Inter', system-ui, sans-serif",
+  fontSize: '1.25rem',
+  fontWeight: 700,
+  color: '#0f172a',
+  margin: '0 0 0.25rem 0',
+  letterSpacing: '-0.02em',
+};
+
+const subtitleStyle: CSSProperties = {
+  fontFamily: "'Inter', system-ui, sans-serif",
+  fontSize: '0.8125rem',
+  color: '#64748b',
+  margin: '0 0 1.25rem 0',
+  lineHeight: 1.5,
+};
+
+// ─── Content Area ─────────────────────────────────────────────────
+const contentStyle: CSSProperties = {
+  padding: '0 2rem 1.5rem',
+};
+
+// ─── Buttons ──────────────────────────────────────────────────────
 const buttonBase: CSSProperties = {
   padding: '0.625rem 1.25rem',
-  borderRadius: '0.875rem',
+  borderRadius: '0.75rem',
   fontSize: '0.8125rem',
   fontWeight: 600,
-  fontFamily: 'Outfit',
+  fontFamily: "'Inter', system-ui, sans-serif",
   cursor: 'pointer',
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  display: 'flex',
+  display: 'inline-flex',
   alignItems: 'center',
+  justifyContent: 'center',
   gap: '0.5rem',
   border: 'none',
+  letterSpacing: '-0.01em',
 };
 
 const cancelButton: CSSProperties = {
   ...buttonBase,
-  backgroundColor: 'rgba(15, 23, 42, 0.04)',
+  backgroundColor: 'transparent',
   color: '#64748b',
-  border: '1px solid rgba(15, 23, 42, 0.08)',
 };
 
 const backButton: CSSProperties = {
   ...buttonBase,
   backgroundColor: 'rgba(15, 23, 42, 0.04)',
   color: '#475569',
-  border: '1px solid rgba(15, 23, 42, 0.08)',
+  border: '1px solid rgba(15, 23, 42, 0.06)',
 };
 
-const nextButton: CSSProperties = {
+const nextButton = (accentColor: string): CSSProperties => ({
   ...buttonBase,
-  backgroundColor: '#6366f1',
+  backgroundColor: accentColor,
   color: '#fff',
-  border: 'none',
-};
+  boxShadow: `0 2px 8px ${accentColor}30`,
+});
 
-const confirmButton: CSSProperties = {
+const confirmButton = (accentColor: string): CSSProperties => ({
   ...buttonBase,
-  backgroundColor: '#10b981',
+  backgroundColor: accentColor,
   color: '#fff',
-  border: 'none',
-};
+  boxShadow: `0 2px 12px ${accentColor}40`,
+  minWidth: '9rem',
+});
 
+// ─── Error ────────────────────────────────────────────────────────
 const errorStyle: CSSProperties = {
   padding: '0.75rem 1rem',
-  borderRadius: '0.625rem',
-  backgroundColor: 'rgba(239, 68, 68, 0.08)',
-  border: '1px solid rgba(239, 68, 68, 0.2)',
-  color: '#ef4444',
+  borderRadius: '0.75rem',
+  backgroundColor: 'rgba(239, 68, 68, 0.06)',
+  border: '1px solid rgba(239, 68, 68, 0.12)',
+  color: '#dc2626',
   fontSize: '0.8125rem',
   marginBottom: '1rem',
+  fontFamily: "'Inter', system-ui, sans-serif",
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
 };
+
+// ─── Footer ───────────────────────────────────────────────────────
+const footerStyle: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '1rem 2rem 1.5rem',
+  borderTop: '1px solid rgba(15, 23, 42, 0.05)',
+  gap: '0.75rem',
+};
+
+// ─── Success Overlay ──────────────────────────────────────────────
+const successOverlayStyle: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  zIndex: 50,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '0.75rem',
+  backgroundColor: 'rgba(255, 255, 255, 0.98)',
+  borderRadius: '1.5rem',
+  animation: 'wizardFadeIn 0.2s ease-out',
+};
+
+const successRingStyle = (accentColor: string): CSSProperties => ({
+  width: '4.5rem',
+  height: '4.5rem',
+  borderRadius: '50%',
+  backgroundColor: `${accentColor}12`,
+  border: `3px solid ${accentColor}`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  animation: 'successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+});
 
 type StepKey = 'type' | 'config' | 'devices' | 'confirm';
 
@@ -153,7 +226,6 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
   const createNotification = useCreateNotification();
   const linkNotification = useLinkNotification();
 
-  // Dynamic step flow based on selected type
   const needsConfig = useMemo(() => hasConfigRequirements(config.type), [config.type]);
   const stepKeys: StepKey[] = needsConfig
     ? ['type', 'config', 'devices', 'confirm']
@@ -164,16 +236,20 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
     ? [
         { key: 'type', label: 'Tipo' },
         { key: 'config', label: 'Config' },
-        { key: 'devices', label: 'Dispositivos' },
-        { key: 'confirm', label: 'Confirmar' },
+        { key: 'devices', label: 'Equipos' },
+        { key: 'confirm', label: 'Listo' },
       ]
     : [
         { key: 'type', label: 'Tipo' },
-        { key: 'devices', label: 'Dispositivos' },
-        { key: 'confirm', label: 'Confirmar' },
+        { key: 'devices', label: 'Equipos' },
+        { key: 'confirm', label: 'Listo' },
       ];
 
   const currentStepKey = stepKeys[step - 1] as StepKey;
+
+  // Accent color derived from selected type
+  const typeConfig = getAlertConfig(config.type);
+  const accentColor = config.type ? typeConfig.color : '#6366f1';
 
   const handleTypeSelect = (type: string) => {
     setConfig((prev) => ({ ...prev, type }));
@@ -189,61 +265,36 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
     setError(null);
 
     if (currentStepKey === 'config') {
-      // Validate config requirements
       const req = config.type;
       if (req === 'geofenceEnter' || req === 'geofenceExit') {
-        if (!config.geofenceId) {
-          setError('Selecciona una geozona');
-          return;
-        }
+        if (!config.geofenceId) { setError('Selecciona una geozona'); return; }
       }
       if (req === 'deviceOverspeed') {
-        if (!config.speedLimit) {
-          setError('Ingresa un límite de velocidad');
-          return;
-        }
+        if (!config.speedLimit) { setError('Ingresa un límite de velocidad'); return; }
       }
       if (req === 'alarm') {
-        if (!config.alarmSubtype) {
-          setError('Selecciona un subtipo de alarma');
-          return;
-        }
+        if (!config.alarmSubtype) { setError('Selecciona un subtipo de alarma'); return; }
       }
       if (req === 'maintenance') {
-        if (!config.maintenanceId) {
-          setError('Selecciona un mantenimiento');
-          return;
-        }
+        if (!config.maintenanceId) { setError('Selecciona un mantenimiento'); return; }
       }
       if (req === 'driverChanged') {
-        if (!config.driverId) {
-          setError('Selecciona un conductor');
-          return;
-        }
+        if (!config.driverId) { setError('Selecciona un conductor'); return; }
       }
       if (req === 'commandResult') {
-        if (!config.commandId) {
-          setError('Selecciona un comando');
-          return;
-        }
+        if (!config.commandId) { setError('Selecciona un comando'); return; }
       }
     }
 
     if (currentStepKey === 'devices') {
-      if (config.deviceIds.length === 0) {
-        setError('Selecciona al menos un dispositivo');
-        return;
-      }
+      if (config.deviceIds.length === 0) { setError('Selecciona al menos un dispositivo'); return; }
     }
 
     setStep((s) => Math.min(s + 1, totalSteps));
   };
 
   const handleConfirm = useCallback(async () => {
-    if (config.deviceIds.length === 0) {
-      setError('Selecciona al menos un dispositivo');
-      return;
-    }
+    if (config.deviceIds.length === 0) { setError('Selecciona al menos un dispositivo'); return; }
 
     try {
       setError(null);
@@ -254,12 +305,8 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
       });
 
       const attributes: Record<string, unknown> = {};
-      if (config.speedLimit) {
-        attributes.speedLimit = config.speedLimit;
-      }
-      if (config.alarmSubtype) {
-        attributes.alarmType = config.alarmSubtype;
-      }
+      if (config.speedLimit) attributes.speedLimit = config.speedLimit;
+      if (config.alarmSubtype) attributes.alarmType = config.alarmSubtype;
 
       const result = await createNotification.mutateAsync({
         type: config.type,
@@ -303,92 +350,98 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
 
   if (!open) return null;
 
-  const successOverlayStyle: CSSProperties = {
-    position: 'absolute',
-    inset: 0,
-    zIndex: 50,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '1rem',
-    backgroundColor: 'rgba(255, 255, 255, 0.97)',
-    borderRadius: '1.25rem',
-  };
-
-  const successCheckStyle: CSSProperties = {
-    width: '4rem',
-    height: '4rem',
-    borderRadius: '50%',
-    backgroundColor: '#10b981',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    animation: 'scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  };
-
-  // Determine which step shows the confirm button
   const isLastStep = step === totalSteps;
   const isConfirmStep = currentStepKey === 'confirm';
   const hasNextStep = !isLastStep;
 
+  // Build confirmation summary items
+  const summaryItems: { label: string; value: string }[] = [];
+  summaryItems.push({ label: 'Tipo', value: typeConfig.label || config.type });
+  if (config.geofenceId) summaryItems.push({ label: 'Geozona ID', value: String(config.geofenceId) });
+  if (config.speedLimit) summaryItems.push({ label: 'Límite velocidad', value: `${config.speedLimit} kn` });
+  if (config.alarmSubtype) summaryItems.push({ label: 'Alarma', value: config.alarmSubtype });
+  summaryItems.push({ label: 'Dispositivos', value: `${config.deviceIds.length} seleccionado(s)` });
+
   return (
     <div style={overlayStyle} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ ...cardStyle, position: 'relative' }}>
+      <div style={cardStyle}>
         {/* Success overlay */}
         {showSuccess && (
           <div style={successOverlayStyle}>
-            <div style={successCheckStyle}>
-              <IconCheck size={32} color="#fff" />
+            <div style={successRingStyle(accentColor)}>
+              <IconCheck size={28} color={accentColor} />
             </div>
-            <div style={{ fontFamily: 'Outfit', fontSize: '1.125rem', fontWeight: 700, color: '#0f172a' }}>
+            <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: '1.125rem', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.02em' }}>
               Alerta creada
             </div>
-            <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>
+            <div style={{ fontSize: '0.8125rem', color: '#64748b', fontFamily: "'Inter', system-ui, sans-serif" }}>
               La notificación se configuró correctamente
             </div>
           </div>
         )}
-        {/* Step indicator — dynamic based on type */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-          {stepLabels.map((s, i) => {
-            const stepNum = i + 1;
-            const isActive = step === stepNum;
-            const isCompleted = step > stepNum;
-            return (
-              <div key={s.key} style={{ display: 'flex', alignItems: 'center', flex: i < stepLabels.length - 1 ? 1 : undefined }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={stepIndicatorStyle(isActive, isCompleted)}>
-                    {isCompleted ? <IconCheck size={12} color="#fff" /> : stepNum}
+
+        {/* Header */}
+        <div style={headerStyle}>
+          {/* Step indicator */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.375rem', marginBottom: '1.5rem' }}>
+            {stepLabels.map((s, i) => {
+              const stepNum = i + 1;
+              const isActive = step === stepNum;
+              const isCompleted = step > stepNum;
+              return (
+                <div key={s.key} style={{ display: 'flex', alignItems: 'center', flex: i < stepLabels.length - 1 ? 1 : undefined }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                    <div style={stepIndicatorStyle(isActive, isCompleted, accentColor)}>
+                      {isCompleted ? <IconCheck size={14} color="#fff" /> : stepNum}
+                    </div>
+                    <span style={stepLabelStyle(isActive)}>{s.label}</span>
                   </div>
-                  <span style={stepLabelStyle(isActive)}>{s.label}</span>
+                  {i < stepLabels.length - 1 && (
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 0.25rem', marginBottom: '1.25rem' }}>
+                      <div style={stepLineStyle(isCompleted, accentColor)} />
+                    </div>
+                  )}
                 </div>
-                {i < stepLabels.length - 1 && <div style={stepLineStyle(isCompleted)} />}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
+          <h2 style={titleStyle}>
+            {currentStepKey === 'type' && 'Qué querés monitorear?'}
+            {currentStepKey === 'config' && 'Configuración'}
+            {currentStepKey === 'devices' && 'A qué equipos aplica?'}
+            {currentStepKey === 'confirm' && 'Revisá y confirmá'}
+          </h2>
+          <p style={subtitleStyle}>
+            {currentStepKey === 'type' && 'Elegí el tipo de evento que querés rastrear'}
+            {currentStepKey === 'config' && 'Ajustá los parámetros de la alerta'}
+            {currentStepKey === 'devices' && 'Seleccioná los dispositivos que dispararán esta alerta'}
+            {currentStepKey === 'confirm' && 'Verificá que todo esté correcto antes de crear'}
+          </p>
         </div>
 
-        {/* Step content */}
-        {currentStepKey === 'type' && (
-          <>
-            <h2 style={titleStyle}>Tipo de Alerta</h2>
+        {/* Content */}
+        <div style={contentStyle}>
+          {error && (
+            <div style={errorStyle}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M8 5v3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <circle cx="8" cy="11" r="0.75" fill="currentColor" />
+              </svg>
+              {error}
+            </div>
+          )}
+
+          {currentStepKey === 'type' && (
             <AlertTypeSelect onSelect={handleTypeSelect} />
-          </>
-        )}
+          )}
 
-        {currentStepKey === 'config' && (
-          <>
-            <h2 style={titleStyle}>Configuración</h2>
-            {error && <div style={errorStyle}>{error}</div>}
+          {currentStepKey === 'config' && (
             <AlertConfig type={config.type} config={config} onChange={handleConfigChange} />
-          </>
-        )}
+          )}
 
-        {currentStepKey === 'devices' && (
-          <>
-            <h2 style={titleStyle}>Seleccionar Dispositivos</h2>
-            {error && <div style={errorStyle}>{error}</div>}
+          {currentStepKey === 'devices' && (
             <AlertDeviceSelect
               selectedDeviceIds={config.deviceIds}
               onChange={(ids) => {
@@ -396,27 +449,34 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
                 setError(null);
               }}
             />
-          </>
-        )}
+          )}
 
-        {currentStepKey === 'confirm' && (
-          <>
-            <h2 style={titleStyle}>Confirmar</h2>
-            {error && <div style={errorStyle}>{error}</div>}
-            <div style={{ fontFamily: 'Outfit', fontSize: '0.875rem', color: '#475569', lineHeight: 1.6 }}>
-              <p style={{ margin: '0 0 0.75rem' }}>
-                Estás por crear una alerta de tipo <strong>{config.type}</strong> para{' '}
-                <strong>{config.deviceIds.length} dispositivo(s)</strong>.
-              </p>
-              {config.geofenceId && <p style={{ margin: '0 0 0.5rem' }}>Geozona: {config.geofenceId}</p>}
-              {config.speedLimit && <p style={{ margin: '0 0 0.5rem' }}>Límite: {config.speedLimit} knots</p>}
-              {config.alarmSubtype && <p style={{ margin: '0 0 0.5rem' }}>Alarma: {config.alarmSubtype}</p>}
+          {currentStepKey === 'confirm' && (
+            <div style={{
+              backgroundColor: 'rgba(15, 23, 42, 0.02)',
+              borderRadius: '1rem',
+              border: '1px solid rgba(15, 23, 42, 0.05)',
+              overflow: 'hidden',
+            }}>
+              {summaryItems.map((item, i) => (
+                <div key={item.label} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.75rem 1.25rem',
+                  borderBottom: i < summaryItems.length - 1 ? '1px solid rgba(15, 23, 42, 0.05)' : 'none',
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                }}>
+                  <span style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 500 }}>{item.label}</span>
+                  <span style={{ fontSize: '0.8125rem', color: '#0f172a', fontWeight: 600 }}>{item.value}</span>
+                </div>
+              ))}
             </div>
-          </>
-        )}
+          )}
+        </div>
 
-        {/* Action buttons */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', gap: '0.75rem' }}>
+        {/* Footer */}
+        <div style={footerStyle}>
           <div>
             {step > 1 && (
               <button
@@ -434,8 +494,8 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
           <button
             style={cancelButton}
             onClick={() => { setStep(1); setConfig(initialConfig); setError(null); onClose(); }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.08)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#0f172a'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
           >
             Cancelar
           </button>
@@ -443,31 +503,59 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
           <div>
             {hasNextStep && !isConfirmStep && (
               <button
-                style={nextButton}
+                style={nextButton(accentColor)}
                 onClick={handleNext}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#5558e0'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
+                onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.92)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.filter = ''; e.currentTarget.style.transform = ''; }}
               >
                 Siguiente
               </button>
             )}
             {isConfirmStep && (
               <button
-                style={confirmButton}
+                style={confirmButton(accentColor)}
                 onClick={handleConfirm}
                 disabled={isLoading}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#0ea472'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
+                onMouseEnter={(e) => { if (!isLoading) { e.currentTarget.style.filter = 'brightness(0.92)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+                onMouseLeave={(e) => { e.currentTarget.style.filter = ''; e.currentTarget.style.transform = ''; }}
               >
-                <IconCheck size={14} />
-                {isLoading ? 'Creando...' : 'Crear Alerta'}
+                {isLoading ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
+                      <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="28" strokeDashoffset="8" strokeLinecap="round" />
+                    </svg>
+                    Creando...
+                  </>
+                ) : (
+                  <>
+                    <IconCheck size={14} />
+                    Crear Alerta
+                  </>
+                )}
               </button>
             )}
           </div>
         </div>
       </div>
+
       <style>{`
-        @keyframes scaleIn { from { transform: scale(0); } to { transform: scale(1); } }
+        @keyframes wizardFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes wizardSlideUp {
+          from { opacity: 0; transform: translateY(16px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes successPop {
+          0% { transform: scale(0); opacity: 0; }
+          60% { transform: scale(1.15); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
       `}</style>
     </div>
   );

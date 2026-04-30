@@ -10,37 +10,32 @@ interface AlertConfigProps {
   onChange: (config: Partial<AlertWizardConfig>) => void;
 }
 
+// ─── Form Field ───────────────────────────────────────────────────
+const fieldGroupStyle: CSSProperties = {
+  marginBottom: '1.25rem',
+};
+
 const labelStyle: CSSProperties = {
   display: 'block',
-  fontFamily: 'Outfit',
-  fontSize: '0.8125rem',
+  fontFamily: "'Inter', system-ui, sans-serif",
+  fontSize: '0.75rem',
   fontWeight: 600,
-  color: '#0f172a',
-  marginBottom: '0.5rem',
+  color: '#334155',
+  marginBottom: '0.375rem',
+  letterSpacing: '-0.01em',
 };
 
-const selectStyle: CSSProperties = {
+const sharedInputStyle: CSSProperties = {
   width: '100%',
-  padding: '0.75rem 1rem',
-  borderRadius: '0.875rem',
-  border: '1px solid rgba(15, 23, 42, 0.08)',
-  backgroundColor: 'rgba(15, 23, 42, 0.03)',
+  padding: '0.7rem 1rem',
+  borderRadius: '0.75rem',
+  border: '1.5px solid rgba(15, 23, 42, 0.08)',
+  backgroundColor: 'rgba(15, 23, 42, 0.02)',
   color: '#0f172a',
   fontSize: '0.875rem',
-  fontFamily: 'inherit',
+  fontFamily: "'Inter', system-ui, sans-serif",
   outline: 'none',
-  cursor: 'pointer',
-};
-
-const inputStyle: CSSProperties = {
-  width: '100%',
-  padding: '0.75rem 1rem',
-  borderRadius: '0.875rem',
-  border: '1px solid rgba(15, 23, 42, 0.08)',
-  backgroundColor: 'rgba(15, 23, 42, 0.03)',
-  color: '#0f172a',
-  fontSize: '0.875rem',
-  outline: 'none',
+  transition: 'all 0.2s',
   boxSizing: 'border-box' as const,
 };
 
@@ -48,17 +43,58 @@ const helperTextStyle: CSSProperties = {
   fontSize: '0.6875rem',
   color: '#94a3b8',
   marginTop: '0.375rem',
+  fontFamily: "'Inter', system-ui, sans-serif",
+  lineHeight: 1.4,
 };
 
-const sectionStyle: CSSProperties = {
-  marginBottom: '1.5rem',
-};
-
+// ─── No-config State ──────────────────────────────────────────────
 const noConfigStyle: CSSProperties = {
   textAlign: 'center' as const,
   padding: '2rem 1rem',
+};
+
+const noConfigIconStyle: CSSProperties = {
+  fontSize: '2.5rem',
+  marginBottom: '0.75rem',
+};
+
+const noConfigTitleStyle: CSSProperties = {
+  fontFamily: "'Inter', system-ui, sans-serif",
+  fontWeight: 600,
+  fontSize: '0.9375rem',
+  color: '#0f172a',
+  marginBottom: '0.25rem',
+  letterSpacing: '-0.01em',
+};
+
+const noConfigDescStyle: CSSProperties = {
+  fontSize: '0.8125rem',
   color: '#64748b',
-  fontSize: '0.875rem',
+  fontFamily: "'Inter', system-ui, sans-serif",
+  lineHeight: 1.5,
+};
+
+// ─── Info Banner ──────────────────────────────────────────────────
+const comingSoonStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.75rem',
+  padding: '1rem 1.25rem',
+  borderRadius: '0.875rem',
+  backgroundColor: 'rgba(245, 158, 11, 0.06)',
+  border: '1px solid rgba(245, 158, 11, 0.12)',
+};
+
+const comingSoonIconStyle: CSSProperties = {
+  fontSize: '1.25rem',
+  flexShrink: 0,
+};
+
+const comingSoonTextStyle: CSSProperties = {
+  fontSize: '0.8125rem',
+  color: '#92400e',
+  fontFamily: "'Inter', system-ui, sans-serif",
+  lineHeight: 1.4,
 };
 
 export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
@@ -68,17 +104,12 @@ export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
   const typeConfig = ALERT_TYPE_CONFIG[type];
   const requirements = typeConfig?.configRequirements ?? {};
 
-  // If no config requirements, show message
   if (!hasConfigRequirements(type)) {
     return (
       <div style={noConfigStyle}>
-        <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>
-          {typeConfig?.icon ?? '✅'}
-        </div>
-        <div style={{ fontFamily: 'Outfit', fontWeight: 600, marginBottom: '0.25rem' }}>
-          Sin configuración adicional
-        </div>
-        <div style={{ fontSize: '0.75rem' }}>
+        <div style={noConfigIconStyle}>{typeConfig?.icon ?? '✅'}</div>
+        <div style={noConfigTitleStyle}>Sin configuración adicional</div>
+        <div style={noConfigDescStyle}>
           Esta alerta se activará automáticamente para los dispositivos seleccionados
         </div>
       </div>
@@ -88,12 +119,22 @@ export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
   return (
     <div>
       {requirements.needsGeofence && (
-        <div style={sectionStyle}>
+        <div style={fieldGroupStyle}>
           <label style={labelStyle}>Geozona</label>
           <select
-            style={selectStyle}
+            style={sharedInputStyle}
             value={config.geofenceId ?? ''}
             onChange={(e) => onChange({ geofenceId: Number(e.target.value) || undefined })}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.08)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.08)';
+              e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.02)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           >
             <option value="">Seleccionar geozona...</option>
             {geofences.map((g) => (
@@ -107,11 +148,11 @@ export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
       )}
 
       {requirements.needsSpeedLimit && (
-        <div style={sectionStyle}>
+        <div style={fieldGroupStyle}>
           <label style={labelStyle}>Límite de Velocidad ({speedLabel})</label>
           <input
             type="number"
-            style={inputStyle}
+            style={sharedInputStyle}
             placeholder="Ej: 80"
             value={config.speedLimit ? Math.round(config.speedLimit * (speedUnit === 'kmh' ? 1.852 : 1.15078)) : ''}
             onChange={(e) => {
@@ -123,20 +164,40 @@ export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
               const knotsValue = displayValue / (speedUnit === 'kmh' ? 1.852 : 1.15078);
               onChange({ speedLimit: Math.round(knotsValue * 10) / 10 });
             }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.08)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.08)';
+              e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.02)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
             min={1}
             max={500}
           />
-          <p style={helperTextStyle}>Velocidad máxima permitida</p>
+          <p style={helperTextStyle}>Velocidad máxima permitida antes de disparar la alerta</p>
         </div>
       )}
 
       {requirements.needsAlarmSubtype && (
-        <div style={sectionStyle}>
+        <div style={fieldGroupStyle}>
           <label style={labelStyle}>Subtipo de Alarma</label>
           <select
-            style={selectStyle}
+            style={sharedInputStyle}
             value={config.alarmSubtype ?? ''}
             onChange={(e) => onChange({ alarmSubtype: e.target.value || undefined })}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.08)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.08)';
+              e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.02)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           >
             <option value="">Seleccionar subtipo...</option>
             {ALARM_SUBTYPES.map((s) => (
@@ -148,32 +209,32 @@ export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
       )}
 
       {requirements.needsMaintenanceId && (
-        <div style={sectionStyle}>
+        <div style={fieldGroupStyle}>
           <label style={labelStyle}>Mantenimiento</label>
-          <select style={selectStyle} value="">
-            <option value="">Próximamente...</option>
-          </select>
-          <p style={helperTextStyle}>La configuración de mantenimiento estará disponible pronto</p>
+          <div style={comingSoonStyle}>
+            <span style={comingSoonIconStyle}>🔧</span>
+            <span style={comingSoonTextStyle}>La configuración de mantenimiento estará disponible pronto</span>
+          </div>
         </div>
       )}
 
       {requirements.needsDriverId && (
-        <div style={sectionStyle}>
+        <div style={fieldGroupStyle}>
           <label style={labelStyle}>Conductor</label>
-          <select style={selectStyle} value="">
-            <option value="">Próximamente...</option>
-          </select>
-          <p style={helperTextStyle}>La selección de conductores estará disponible pronto</p>
+          <div style={comingSoonStyle}>
+            <span style={comingSoonIconStyle}>👤</span>
+            <span style={comingSoonTextStyle}>La selección de conductores estará disponible pronto</span>
+          </div>
         </div>
       )}
 
       {requirements.needsCommandId && (
-        <div style={sectionStyle}>
+        <div style={fieldGroupStyle}>
           <label style={labelStyle}>Comando</label>
-          <select style={selectStyle} value="">
-            <option value="">Próximamente...</option>
-          </select>
-          <p style={helperTextStyle}>La selección de comandos estará disponible pronto</p>
+          <div style={comingSoonStyle}>
+            <span style={comingSoonIconStyle}>💻</span>
+            <span style={comingSoonTextStyle}>La selección de comandos estará disponible pronto</span>
+          </div>
         </div>
       )}
     </div>
