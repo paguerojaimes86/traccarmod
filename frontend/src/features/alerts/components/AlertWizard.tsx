@@ -5,7 +5,7 @@ import { AlertDeviceSelect } from './AlertDeviceSelect';
 import { useCreateNotification } from '@features/notifications/hooks/useNotifications';
 import { useLinkNotification } from '@features/notifications/hooks/useLinkNotification';
 import type { AlertWizardConfig } from '@shared/lib/alert-types';
-import { hasConfigRequirements, getAlertConfig } from '@shared/lib/alert-types';
+import { hasConfigRequirements, getAlertConfig, validateAlertConfig } from '@shared/lib/alert-types';
 import { alertsDebug, alertsWarn } from '@shared/lib/debug';
 import { IconArrowLeft, IconCheck } from '@shared/ui/icons';
 
@@ -265,25 +265,8 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
     setError(null);
 
     if (currentStepKey === 'config') {
-      const req = config.type;
-      if (req === 'geofenceEnter' || req === 'geofenceExit') {
-        if (!config.geofenceId) { setError('Selecciona una geozona'); return; }
-      }
-      if (req === 'deviceOverspeed') {
-        if (!config.speedLimit) { setError('Ingresa un límite de velocidad'); return; }
-      }
-      if (req === 'alarm') {
-        if (!config.alarmSubtype) { setError('Selecciona un subtipo de alarma'); return; }
-      }
-      if (req === 'maintenance') {
-        if (!config.maintenanceId) { setError('Selecciona un mantenimiento'); return; }
-      }
-      if (req === 'driverChanged') {
-        if (!config.driverId) { setError('Selecciona un conductor'); return; }
-      }
-      if (req === 'commandResult') {
-        if (!config.commandId) { setError('Selecciona un comando'); return; }
-      }
+      const error = validateAlertConfig(config.type, config);
+      if (error) { setError(error); return; }
     }
 
     if (currentStepKey === 'devices') {

@@ -262,6 +262,38 @@ export function hasConfigRequirements(type: string): boolean {
   return Object.values(config.configRequirements).some(v => v === true);
 }
 
+/**
+ * Validates wizard config against the requirements declared in ALERT_TYPE_CONFIG.
+ * Returns the first validation error found, or null if all requirements are satisfied.
+ *
+ * This replaces the hardcoded if/else chain in AlertWizard — adding a new requirement
+ * type only requires updating this map, not the wizard logic.
+ */
+export function validateAlertConfig(
+  type: string,
+  config: AlertWizardConfig,
+): string | null {
+  const requirements = ALERT_TYPE_CONFIG[type]?.configRequirements;
+  if (!requirements) return null;
+
+  const checks: { flag: keyof typeof requirements; field: keyof AlertWizardConfig; message: string }[] = [
+    { flag: 'needsGeofence', field: 'geofenceId', message: 'Selecciona una geozona' },
+    { flag: 'needsSpeedLimit', field: 'speedLimit', message: 'Ingresa un límite de velocidad' },
+    { flag: 'needsAlarmSubtype', field: 'alarmSubtype', message: 'Selecciona un subtipo de alarma' },
+    { flag: 'needsMaintenanceId', field: 'maintenanceId', message: 'Selecciona un mantenimiento' },
+    { flag: 'needsDriverId', field: 'driverId', message: 'Selecciona un conductor' },
+    { flag: 'needsCommandId', field: 'commandId', message: 'Selecciona un comando' },
+  ];
+
+  for (const check of checks) {
+    if (requirements[check.flag] && !config[check.field]) {
+      return check.message;
+    }
+  }
+
+  return null;
+}
+
 export interface AlertWizardConfig {
   type: string;
   geofenceId?: number;
