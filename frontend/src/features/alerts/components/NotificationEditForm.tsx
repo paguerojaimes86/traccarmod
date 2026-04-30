@@ -4,7 +4,7 @@ import { useLinkNotification } from '@features/notifications/hooks/useLinkNotifi
 import { useUnlinkNotification } from '@features/notifications/hooks/useUnlinkNotification';
 import { useLinkedDeviceIds, useInvalidateLinkedDevices } from '@features/notifications/hooks/useLinkedDeviceIds';
 import { useDevices } from '@features/devices/hooks/useDevices';
-import { getAlertConfig, ALERT_TYPE_CONFIG, ALARM_SUBTYPES } from '@shared/lib/alert-types';
+import { getAlertConfig, ALERT_TYPE_CONFIG, ALARM_SUBTYPES, NOTIFICATOR_OPTIONS } from '@shared/lib/alert-types';
 import { IconClose } from '@shared/ui/icons';
 import type { Notification } from '@shared/api/types.models';
 
@@ -14,12 +14,6 @@ interface NotificationEditFormProps {
   onClose: () => void;
   onSuccess?: () => void;
 }
-
-const NOTIFICATOR_OPTIONS = [
-  { key: 'web', label: 'Web' },
-  { key: 'mail', label: 'Email' },
-  { key: 'sms', label: 'SMS' },
-] as const;
 
 const overlayStyle: CSSProperties = {
   position: 'fixed',

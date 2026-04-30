@@ -7,7 +7,7 @@ import { useAlertStore } from '@features/alerts/store';
 import { useDevices } from '@features/devices/hooks/useDevices';
 import { usePermissions } from '@shared/permissions';
 import { useMapStore } from '@features/map/store';
-import { getAlertConfig, ALERT_TYPE_CONFIG } from '@shared/lib/alert-types';
+import { getAlertConfig, ALERT_TYPE_CONFIG, NOTIFICATOR_LABELS } from '@shared/lib/alert-types';
 import type { TypeConfig } from '@shared/lib/alert-types';
 import { AlertItem } from './AlertItem';
 import { IconBell, IconClose, IconPlus, IconSettings } from '@shared/ui/icons';
@@ -385,10 +385,11 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
               const typeColor = config.color || '#6b7280';
               const typeIcon = config.icon || '🔔';
               const channels: string[] = [];
-              if (n.notificators?.includes('web')) channels.push('Web');
-              if (n.notificators?.includes('mail')) channels.push('Email');
-              if (n.notificators?.includes('sms')) channels.push('SMS');
-              const channelLabel = channels.length > 0 ? channels.join(', ') : 'Web';
+              const notifs = (n.notificators ?? '').split(',').filter(Boolean);
+              for (const ch of notifs) {
+                channels.push(NOTIFICATOR_LABELS[ch] ?? ch);
+              }
+              const channelLabel = channels.length > 0 ? channels.join(', ') : 'Sin canal';
               return (
                 <li
                   key={n.id}

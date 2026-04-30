@@ -2,10 +2,11 @@ import { useState, useCallback, useMemo, type CSSProperties } from 'react';
 import { AlertTypeSelect } from './AlertTypeSelect';
 import { AlertConfig } from './AlertConfig';
 import { AlertDeviceSelect } from './AlertDeviceSelect';
+import { AlertChannels } from './AlertChannels';
 import { useCreateNotification } from '@features/notifications/hooks/useNotifications';
 import { useLinkNotification } from '@features/notifications/hooks/useLinkNotification';
 import type { AlertWizardConfig } from '@shared/lib/alert-types';
-import { hasConfigRequirements, getAlertConfig, validateAlertConfig } from '@shared/lib/alert-types';
+import { hasConfigRequirements, getAlertConfig, validateAlertConfig, NOTIFICATOR_LABELS } from '@shared/lib/alert-types';
 import { alertsDebug, alertsWarn } from '@shared/lib/debug';
 import { IconArrowLeft, IconCheck } from '@shared/ui/icons';
 
@@ -210,11 +211,13 @@ const successRingStyle = (accentColor: string): CSSProperties => ({
   animation: 'successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
 });
 
-type StepKey = 'type' | 'config' | 'devices' | 'confirm';
+type StepKey = 'type' | 'config' | 'devices' | 'channels' | 'confirm';
 
 const initialConfig: AlertWizardConfig = {
   type: '',
   deviceIds: [],
+  notificators: ['web'],
+  always: true,
 };
 
 export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
@@ -228,8 +231,8 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
 
   const needsConfig = useMemo(() => hasConfigRequirements(config.type), [config.type]);
   const stepKeys: StepKey[] = needsConfig
-    ? ['type', 'config', 'devices', 'confirm']
-    : ['type', 'devices', 'confirm'];
+    ? ['type', 'config', 'devices', 'channels', 'confirm']
+    : ['type', 'devices', 'channels', 'confirm'];
   const totalSteps = stepKeys.length;
 
   const stepLabels: { key: StepKey; label: string }[] = needsConfig
@@ -237,11 +240,13 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
         { key: 'type', label: 'Tipo' },
         { key: 'config', label: 'Config' },
         { key: 'devices', label: 'Equipos' },
+        { key: 'channels', label: 'Canales' },
         { key: 'confirm', label: 'Listo' },
       ]
     : [
         { key: 'type', label: 'Tipo' },
         { key: 'devices', label: 'Equipos' },
+        { key: 'channels', label: 'Canales' },
         { key: 'confirm', label: 'Listo' },
       ];
 
@@ -273,6 +278,10 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
       if (config.deviceIds.length === 0) { setError('Selecciona al menos un dispositivo'); return; }
     }
 
+    if (currentStepKey === 'channels') {
+      if (config.notificators.length === 0) { setError('Selecciona al menos un canal de notificación'); return; }
+    }
+
     setStep((s) => Math.min(s + 1, totalSteps));
   };
 
@@ -293,8 +302,8 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
 
       const result = await createNotification.mutateAsync({
         type: config.type,
-        notificators: 'web',
-        always: true,
+        notificators: config.notificators.join(','),
+        always: config.always,
         attributes,
       } as any);
       alertsDebug('wizard', 'notification created from wizard', { id: result?.id, type: result?.type });
@@ -344,6 +353,11 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
   if (config.speedLimit) summaryItems.push({ label: 'Límite velocidad', value: `${config.speedLimit} kn` });
   if (config.alarmSubtype) summaryItems.push({ label: 'Alarma', value: config.alarmSubtype });
   summaryItems.push({ label: 'Dispositivos', value: `${config.deviceIds.length} seleccionado(s)` });
+  summaryItems.push({
+    label: 'Canales',
+    value: config.notificators.map((n) => NOTIFICATOR_LABELS[n] ?? n).join(', ') || 'Web',
+  });
+  summaryItems.push({ label: 'Modo', value: config.always ? 'Siempre activo' : 'Programado' });
 
   return (
     <div style={overlayStyle} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -393,12 +407,14 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
             {currentStepKey === 'type' && 'Qué querés monitorear?'}
             {currentStepKey === 'config' && 'Configuración'}
             {currentStepKey === 'devices' && 'A qué equipos aplica?'}
+            {currentStepKey === 'channels' && 'Cómo te notificamos?'}
             {currentStepKey === 'confirm' && 'Revisá y confirmá'}
           </h2>
           <p style={subtitleStyle}>
             {currentStepKey === 'type' && 'Elegí el tipo de evento que querés rastrear'}
             {currentStepKey === 'config' && 'Ajustá los parámetros de la alerta'}
             {currentStepKey === 'devices' && 'Seleccioná los dispositivos que dispararán esta alerta'}
+            {currentStepKey === 'channels' && 'Elegí por dónde recibir las notificaciones'}
             {currentStepKey === 'confirm' && 'Verificá que todo esté correcto antes de crear'}
           </p>
         </div>
@@ -430,6 +446,20 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
               onChange={(ids) => {
                 setConfig((prev) => ({ ...prev, deviceIds: ids }));
                 setError(null);
+              }}
+            />
+          )}
+
+          {currentStepKey === 'channels' && (
+            <AlertChannels
+              selectedChannels={config.notificators}
+              always={config.always}
+              onChannelsChange={(channels) => {
+                setConfig((prev) => ({ ...prev, notificators: channels }));
+                setError(null);
+              }}
+              onAlwaysChange={(always) => {
+                setConfig((prev) => ({ ...prev, always }));
               }}
             />
           )}

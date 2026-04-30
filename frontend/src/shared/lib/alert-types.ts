@@ -294,6 +294,23 @@ export function validateAlertConfig(
   return null;
 }
 
+/**
+ * Available notification channels. Single source of truth — used by
+ * AlertWizard, NotificationEditForm, NotificationTable, and AlertsPanel.
+ */
+export const NOTIFICATOR_OPTIONS = [
+  { key: 'web', label: 'Web', icon: '🌐' },
+  { key: 'mail', label: 'Email', icon: '✉️' },
+  { key: 'sms', label: 'SMS', icon: '📱' },
+] as const;
+
+export type NotificatorKey = typeof NOTIFICATOR_OPTIONS[number]['key'];
+
+/** Lookup map for channel labels */
+export const NOTIFICATOR_LABELS: Record<string, string> = Object.fromEntries(
+  NOTIFICATOR_OPTIONS.map((o) => [o.key, o.label])
+);
+
 export interface AlertWizardConfig {
   type: string;
   geofenceId?: number;
@@ -304,4 +321,8 @@ export interface AlertWizardConfig {
   commandId?: number;
   calendarId?: number;
   deviceIds: number[];
+  /** Selected notification channels (e.g. ['web', 'mail']). Defaults to ['web']. */
+  notificators: string[];
+  /** Whether the alert is always active (true) or calendar-scheduled (false). Defaults to true. */
+  always: boolean;
 }
