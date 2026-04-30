@@ -2,24 +2,32 @@ import type { ComponentType } from 'react';
 import type { Permissions } from '@shared/permissions/permission-utils';
 import type { User } from '@shared/api/types.models';
 import { computePermissions } from '@shared/permissions/permission-utils';
-import type { IconProps } from '@shared/ui/icons';
 import {
-  IconNavigation,
-  IconPin,
+  IconRss,
+  IconHexagon,
   IconBell,
+  IconChartBar,
   IconUsers,
-  IconGroup,
-  IconCommand,
-  IconFileBarChart,
+  IconHierarchy2,
+  IconTerminal2,
   IconSettings,
-} from '@shared/ui/icons';
+} from '@tabler/icons-react';
+
+// Tabler icon props interface
+interface TablerIconProps {
+  size?: number;
+  strokeWidth?: number;
+  color?: string;
+  style?: React.CSSProperties;
+  className?: string;
+}
 
 export type MenuCategory = 'Principal' | 'Gestión' | 'Sistema';
 
 export interface MenuItem {
   label: string;
   path: string;
-  icon: ComponentType<IconProps>;
+  icon: ComponentType<TablerIconProps>;
   category: MenuCategory;
   visibleWhen: (p: Permissions) => boolean;
 }
@@ -28,14 +36,14 @@ export const menuConfig: MenuItem[] = [
   {
     label: 'Dispositivos',
     path: '/devices',
-    icon: IconNavigation,
+    icon: IconRss,
     category: 'Principal',
     visibleWhen: () => true,
   },
   {
     label: 'Geocercas',
     path: '/geofences',
-    icon: IconPin,
+    icon: IconHexagon,
     category: 'Principal',
     visibleWhen: () => true,
   },
@@ -49,7 +57,7 @@ export const menuConfig: MenuItem[] = [
   {
     label: 'Reportes',
     path: '/reports',
-    icon: IconFileBarChart,
+    icon: IconChartBar,
     category: 'Principal',
     visibleWhen: () => true,
   },
@@ -63,14 +71,14 @@ export const menuConfig: MenuItem[] = [
   {
     label: 'Grupos',
     path: '/groups',
-    icon: IconGroup,
+    icon: IconHierarchy2,
     category: 'Gestión',
     visibleWhen: () => true,
   },
   {
     label: 'Comandos',
     path: '/commands',
-    icon: IconCommand,
+    icon: IconTerminal2,
     category: 'Gestión',
     visibleWhen: () => true,
   },

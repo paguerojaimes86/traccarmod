@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, type CSSProperties } from 'react';
+import { useState, useMemo, type CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@shared/lib/constants';
@@ -10,32 +10,30 @@ import { useMapStore } from '@features/map/store';
 import { getAlertConfig, ALERT_TYPE_CONFIG } from '@shared/lib/alert-types';
 import type { TypeConfig } from '@shared/lib/alert-types';
 import { AlertItem } from './AlertItem';
-import { IconBell, IconClose, IconPlus } from '@shared/ui/icons';
+import { IconBell, IconClose, IconPlus, IconSettings } from '@shared/ui/icons';
 import { useDeleteNotification, useNotifications } from '@features/notifications/hooks/useNotifications';
 import { useEvents } from '@features/events/hooks/useEvents';
-import { alertsDebug } from '@shared/lib/debug';
 
 type FilterCategory = 'all' | TypeConfig['category'];
 
 const panelStyle: CSSProperties = {
-  width: '340px',
-  minWidth: '340px',
-  margin: '1.25rem 1.25rem 1.25rem 0',
+  width: '320px',
+  minWidth: '320px',
+  margin: '1rem 1rem 1rem 0',
   zIndex: 20,
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: '1.25rem',
+  borderRadius: '1rem',
   overflow: 'hidden',
-  backgroundColor: 'rgba(255, 255, 255, 0.92)',
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(16px)',
   border: '1px solid rgba(15, 23, 42, 0.06)',
-  boxShadow: '0 4px 20px rgba(15, 23, 42, 0.08)',
+  boxShadow: '0 8px 32px rgba(15, 23, 42, 0.08)',
 };
 
 const headerStyle: CSSProperties = {
-  padding: '1.25rem 1rem',
-  borderBottom: '1px solid rgba(15, 23, 42, 0.06)',
-  background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent)',
+  padding: '1rem',
+  borderBottom: '1px solid rgba(15, 23, 42, 0.05)',
 };
 
 const listStyle: CSSProperties = {
@@ -43,92 +41,94 @@ const listStyle: CSSProperties = {
   overflowY: 'auto',
   listStyle: 'none',
   margin: 0,
-  padding: '0.5rem 0.5rem',
+  padding: '0.375rem 0.375rem',
   scrollbarWidth: 'thin',
-  scrollbarColor: 'rgba(15, 23, 42, 0.1) transparent',
+  scrollbarColor: 'rgba(15, 23, 42, 0.08) transparent',
 };
 
 const badgeStyle = (count: number): CSSProperties => ({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  minWidth: '1.25rem',
-  height: '1.25rem',
+  minWidth: '1.125rem',
+  height: '1.125rem',
   padding: '0 0.375rem',
   borderRadius: '9999px',
-  backgroundColor: count > 0 ? 'var(--color-error)' : 'rgba(15, 23, 42, 0.06)',
-  color: count > 0 ? 'var(--text-inverse)' : 'var(--text-muted)',
-  fontSize: '0.625rem',
-  fontWeight: 700,
-  fontFamily: 'var(--font-family-base)',
+  backgroundColor: count > 0 ? '#ef4444' : 'rgba(15, 23, 42, 0.06)',
+  color: count > 0 ? '#fff' : '#94a3b8',
+  fontSize: '0.5625rem',
+  fontWeight: 800,
+  fontFamily: 'Outfit, sans-serif',
 });
 
 const filterButtonStyle = (isActive: boolean, color: string): CSSProperties => ({
-  minWidth: '3.2rem',
-  padding: '0.4rem 0.6rem',
-  borderRadius: '0.85rem',
+  padding: '0.35rem 0.5rem',
+  borderRadius: '0.75rem',
   border: '1px solid',
-  borderColor: isActive ? `${color}50` : 'var(--border-default)',
+  borderColor: isActive ? `${color}45` : 'rgba(15, 23, 42, 0.06)',
   background: isActive
-    ? `linear-gradient(135deg, ${color}18, rgba(255, 255, 255, 0.6))`
+    ? `linear-gradient(135deg, ${color}15, rgba(255, 255, 255, 0.8))`
     : 'rgba(15, 23, 42, 0.02)',
-  color: isActive ? color : '#64748b',
+  color: isActive ? color : '#94a3b8',
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '0.35rem',
-  transition: 'border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease',
-  boxShadow: isActive ? `0 0 18px -8px ${color}` : 'none',
-  fontSize: '0.7rem',
-  fontWeight: 700,
-  fontFamily: 'var(--font-family-base)',
+  gap: '0.3rem',
+  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: isActive ? `0 0 16px -6px ${color}` : 'none',
+  fontSize: '0.625rem',
+  fontWeight: 800,
+  fontFamily: 'Outfit, sans-serif',
+  letterSpacing: '0.01em',
+  flex: 1,
 });
 
 const createButtonStyle: CSSProperties = {
-  width: '100%',
+  width: 'calc(100% - 1.5rem)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   gap: '0.5rem',
-  padding: '0.75rem 1rem',
-  margin: '0.5rem 0.75rem 0.75rem',
+  padding: '0.625rem 1rem',
+  margin: '0.5rem 0.75rem',
   borderRadius: '0.875rem',
-  border: '1px solid var(--color-primary-border)',
-  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05))',
-  color: 'var(--color-primary)',
+  border: '1px solid rgba(99, 102, 241, 0.3)',
+  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.04))',
+  color: '#6366f1',
   fontSize: '0.8125rem',
-  fontWeight: 600,
-  fontFamily: 'var(--font-family-base)',
+  fontWeight: 700,
+  fontFamily: 'Outfit, sans-serif',
   cursor: 'pointer',
-  transition: 'background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+  transition: 'all 0.2s ease',
 };
 
 const collapseButtonStyle: CSSProperties = {
   padding: '0.375rem',
   border: 'none',
-  background: 'rgba(15, 23, 42, 0.04)',
+  background: 'rgba(15, 23, 42, 0.03)',
   borderRadius: '0.625rem',
   cursor: 'pointer',
-  color: '#475569',
+  color: '#94a3b8',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'color 0.2s ease, background-color 0.2s ease',
+  transition: 'all 0.2s ease',
 };
 
 const tabStyle = (active: boolean): CSSProperties => ({
   flex: 1,
   padding: '0.5rem',
   border: 'none',
-  background: active ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-  color: active ? 'var(--color-primary)' : '#64748b',
-  fontWeight: 600,
-  fontFamily: 'var(--font-family-base)',
+  background: active ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
+  color: active ? '#6366f1' : '#64748b',
+  fontWeight: 700,
+  fontFamily: 'Outfit, sans-serif',
   fontSize: '0.75rem',
   cursor: 'pointer',
   borderRadius: '0.625rem',
-  transition: 'background-color 0.2s ease, color 0.2s ease',
+  transition: 'all 0.2s ease',
+  letterSpacing: '-0.01em',
 });
 
 const notifItemStyle: CSSProperties = {
@@ -137,7 +137,7 @@ const notifItemStyle: CSSProperties = {
   gap: '0.625rem',
   padding: '0.625rem 0.75rem',
   borderRadius: '0.75rem',
-  transition: 'background-color 0.15s',
+  transition: 'background-color 0.15s ease',
   cursor: 'default',
 };
 
@@ -147,11 +147,12 @@ const notifDeleteBtn: CSSProperties = {
   background: 'transparent',
   borderRadius: '0.375rem',
   cursor: 'pointer',
-  color: '#94a3b8',
+  color: '#cbd5e1',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'color 0.2s',
+  transition: 'all 0.2s ease',
+  flexShrink: 0,
 };
 
 interface AlertsPanelProps {
@@ -172,10 +173,6 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
   const deleteNotification = useDeleteNotification();
   const queryClient = useQueryClient();
 
-  const handleDeleteEvent = (eventId: number) => {
-    removeEvent(eventId);
-  };
-
   const [collapsed, setCollapsed] = useState(false);
   const [filter, setFilter] = useState<FilterCategory>('all');
   const [tab, setTab] = useState<'active' | 'configured'>(initialTab ?? 'active');
@@ -195,20 +192,13 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
     });
   }, [recentEvents, filter]);
 
-  useEffect(() => {
-    alertsDebug('panel', 'alerts panel state updated', {
-      tab,
-      filter,
-      recentEvents: recentEvents.length,
-      filteredEvents: filteredEvents.length,
-      notifications: notifications.length,
-    });
-  }, [tab, filter, recentEvents.length, filteredEvents.length, notifications.length]);
+  const handleDeleteEvent = (eventId: number) => {
+    removeEvent(eventId);
+  };
 
   const handleAlertClick = (event: typeof recentEvents[number]) => {
     const device = deviceMap.get(event.deviceId);
     if (device) {
-      // Look up the device's current position from React Query cache (updated via WebSocket)
       const cached = queryClient.getQueryData<PositionMessage[]>(QUERY_KEYS.allPositions);
       const devicePos = cached?.find((p) => p.deviceId === event.deviceId);
       if (devicePos?.latitude != null && devicePos?.longitude != null) {
@@ -232,28 +222,30 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
       <button
         style={{
           position: 'relative',
-          margin: '1.25rem 1.25rem 1.25rem 0',
+          margin: '1rem 1rem 1rem 0',
           width: 'auto',
-          padding: '0.625rem 1rem',
-          borderRadius: '1.25rem',
-          border: '1px solid var(--border-default)',
-          backgroundColor: 'rgba(255, 255, 255, 0.92)',
+          padding: '0.5rem 0.875rem',
+          borderRadius: '0.875rem',
+          border: '1px solid rgba(15, 23, 42, 0.08)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(16px)',
-          color: 'var(--text-primary)',
+          color: '#0f172a',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
           fontSize: '0.8125rem',
           fontWeight: 600,
-          fontFamily: 'var(--font-family-base)',
-          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
-          transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
+          fontFamily: 'Outfit, sans-serif',
+          boxShadow: '0 4px 16px rgba(15, 23, 42, 0.1)',
+          transition: 'all 0.2s ease',
           alignSelf: 'flex-start',
         }}
         onClick={() => setCollapsed(false)}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(15, 23, 42, 0.15)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(15, 23, 42, 0.1)'; }}
       >
-        <IconBell size={16} color="var(--color-error)" />
+        <IconBell size={15} style={{ color: '#ef4444' }} />
         <span>Alertas</span>
         {filterCounts.all > 0 && <span style={badgeStyle(filterCounts.all)}>{filterCounts.all}</span>}
       </button>
@@ -263,54 +255,60 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
   return (
     <div style={panelStyle}>
       <div style={headerStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {/* Header Row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
             <div style={{
-              padding: '0.5rem',
-              borderRadius: '0.75rem',
+              width: 36,
+              height: 36,
+              borderRadius: '10px',
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
               color: '#ef4444',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}>
-              <IconBell size={18} />
+              <IconBell size={17} />
             </div>
             <div>
-              <h2 style={{ margin: 0, fontSize: '1rem', fontFamily: 'Outfit', fontWeight: 700, color: '#0f172a' }}>
+              <h2 style={{ margin: 0, fontSize: '0.9375rem', fontFamily: 'Outfit', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.01em' }}>
                 Alertas
               </h2>
-<span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>
-                {tab === 'active' ? filterCounts.all : notifications.length} {tab === 'active' ? 'activas' : 'configuradas'}
-                {' '}<span style={{
-                  display: 'inline-block',
-                  width: '6px',
-                  height: '6px',
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '1px' }}>
+                <span style={{ fontSize: '0.6875rem', color: '#94a3b8', fontWeight: 600, fontFamily: 'Outfit' }}>
+                  {tab === 'active' ? `${filterCounts.all} activas` : `${notifications.length} configuradas`}
+                </span>
+                <div style={{
+                  width: 6,
+                  height: 6,
                   borderRadius: '50%',
                   backgroundColor: wsEventsActive ? '#10b981' : '#ef4444',
-                  marginLeft: '4px',
-                  verticalAlign: 'middle',
+                  boxShadow: wsEventsActive ? '0 0 0 2px rgba(16, 185, 129, 0.2)' : '0 0 0 2px rgba(239, 68, 68, 0.2)',
                 }} title={wsEventsActive ? 'WebSocket conectado' : 'WebSocket desconectado'} />
-              </span>
+              </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            {/* Clear button */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             {canDeleteAlerts && filterCounts.all > 0 && tab === 'active' && (
               <button
                 title="Limpiar alertas"
                 style={collapseButtonStyle}
                 onClick={() => clearEvents()}
-                onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = '#475569'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.08)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.03)'; }}
               >
-                <IconClose size={16} />
+                <IconClose size={15} />
               </button>
             )}
             <button
               title="Colapsar panel"
               style={collapseButtonStyle}
               onClick={() => setCollapsed(true)}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#0f172a'; e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.06)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.03)'; }}
             >
-              <IconClose size={16} />
+              <IconClose size={15} />
             </button>
           </div>
         </div>
@@ -325,146 +323,144 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
           </button>
         </div>
 
+        {/* Category Filters */}
         {tab === 'active' && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-          <button
-            style={filterButtonStyle(filter === 'all', '#6366f1')}
-            onClick={() => setFilter('all')}
-          >
-            Todos
-          </button>
-          {allCategories.map((cat) => {
-            if (filterCounts[cat] === 0 && filter !== cat) return null;
-            const sampleConfig = ALERT_TYPE_CONFIG[Object.keys(ALERT_TYPE_CONFIG).find((k) => ALERT_TYPE_CONFIG[k].category === cat) ?? ''] ;
-            const color = sampleConfig?.color ?? '#6b7280';
-            const label = cat === 'status' ? 'Estado'
-              : cat === 'movement' ? 'Movimiento'
-              : cat === 'geofence' ? 'Geozona'
-              : cat === 'speed' ? 'Velocidad'
-              : cat === 'alarm' ? 'Alarma'
-              : cat === 'maintenance' ? 'Mantenimiento'
-              : 'Otros';
-            return (
-              <button
-                key={cat}
-                style={filterButtonStyle(filter === cat, color)}
-                onClick={() => setFilter(cat)}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+            <button style={filterButtonStyle(filter === 'all', '#6366f1')} onClick={() => setFilter('all')}>
+              Todos
+            </button>
+            {allCategories.map((cat) => {
+              if (filterCounts[cat] === 0 && filter !== cat) return null;
+              const sampleConfig = ALERT_TYPE_CONFIG[Object.keys(ALERT_TYPE_CONFIG).find((k) => ALERT_TYPE_CONFIG[k].category === cat) ?? ''];
+              const color = sampleConfig?.color ?? '#6b7280';
+              const label = cat === 'status' ? 'Estado'
+                : cat === 'movement' ? 'Movimiento'
+                : cat === 'geofence' ? 'Geozona'
+                : cat === 'speed' ? 'Velocidad'
+                : cat === 'alarm' ? 'Alarma'
+                : cat === 'maintenance' ? 'Mant.'
+                : 'Otros';
+              return (
+                <button key={cat} style={filterButtonStyle(filter === cat, color)} onClick={() => setFilter(cat)}>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         )}
-
-        {tab === 'configured' && null}
       </div>
 
+      {/* Active Events List */}
       {tab === 'active' && (
-      <ul style={listStyle} className="custom-scrollbar">
-        {filteredEvents.map((event) => (
-          <AlertItem
-            key={event.id}
-            event={event}
-            canDelete={canDeleteAlerts}
-            onDelete={canDeleteAlerts ? handleDeleteEvent : undefined}
-            onClick={() => handleAlertClick(event)}
-            deviceName={deviceMap.get(event.deviceId)?.name}
-          />
-        ))}
-        {filteredEvents.length === 0 && (
-          <li style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.8125rem' }}>
-            <div style={{ marginBottom: '0.5rem', opacity: 0.5 }}>🔔</div>
-            Sin alertas activas
-          </li>
-        )}
-      </ul>
-      )}
-
-      {tab === 'configured' && (
-      <>
         <ul style={listStyle} className="custom-scrollbar">
-          {notifications.map((n) => {
-            const config = getAlertConfig(n.type ?? '');
-            const typeLabel = config.label || n.type || 'Desconocido';
-            const typeColor = config.color || '#6b7280';
-            const typeIcon = config.icon || '🔔';
-            const channels: string[] = [];
-            if (n.notificators?.includes('web')) channels.push('Web');
-            if (n.notificators?.includes('mail')) channels.push('Email');
-            if (n.notificators?.includes('sms')) channels.push('SMS');
-            const channelLabel = channels.length > 0 ? channels.join(', ') : 'Web';
-            return (
-              <li
-                key={n.id}
-                style={notifItemStyle}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.03)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
-              >
-                <div style={{
-                  padding: '0.375rem',
-                  borderRadius: '0.625rem',
-                  backgroundColor: `${typeColor}18`,
-                  color: typeColor,
-                  border: `1px solid ${typeColor}30`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '1rem',
-                  flexShrink: 0,
-                }}>
-                  {typeIcon}
-                </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontFamily: 'Outfit', fontSize: '0.8125rem', fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {typeLabel}
-                  </div>
-                  <div style={{ fontSize: '0.6875rem', color: '#94a3b8', display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
-                    <span>{channelLabel}</span>
-                    <span style={{ color: 'rgba(15, 23, 42, 0.15)' }}>·</span>
-                    <span>{n.always ? 'Siempre' : 'Programado'}</span>
-                  </div>
-                </div>
-                {canDeleteAlerts && (
-                  <button
-                    style={notifDeleteBtn}
-                    onClick={() => {
-                      if (n.id) {
-                        deleteNotification.mutate(n.id);
-                      }
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; }}
-                    title="Eliminar notificación"
-                  >
-                    <IconClose size={14} />
-                  </button>
-                )}
-              </li>
-            );
-          })}
-          {notifications.length === 0 && (
-            <li style={{ padding: '2rem 1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.8125rem' }}>
-              <div style={{ marginBottom: '0.5rem', opacity: 0.5 }}>⚙️</div>
-              Sin alertas configuradas
+          {filteredEvents.map((event) => (
+            <AlertItem
+              key={event.id}
+              event={event}
+              canDelete={canDeleteAlerts}
+              onDelete={canDeleteAlerts ? handleDeleteEvent : undefined}
+              onClick={() => handleAlertClick(event)}
+              deviceName={deviceMap.get(event.deviceId)?.name}
+            />
+          ))}
+          {filteredEvents.length === 0 && (
+            <li style={{ padding: '2.5rem 1rem', textAlign: 'center' }}>
+              <div style={{ width: 44, height: 44, borderRadius: '12px', backgroundColor: 'rgba(15, 23, 42, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem' }}>
+                <IconBell size={20} style={{ color: '#cbd5e1' }} />
+              </div>
+              <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 600, color: '#64748b', fontFamily: 'Outfit' }}>Sin alertas activas</p>
+              <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'Outfit' }}>Las alertas aparecerán aquí</p>
             </li>
           )}
         </ul>
-        <div style={{ padding: '0.5rem 0.75rem', textAlign: 'center' }}>
-          <Link
-            to="/alerts"
-            style={{ color: '#6366f1', fontSize: '0.75rem', fontWeight: 600, textDecoration: 'none', fontFamily: 'Outfit' }}
-          >
-            Ver todas las alertas →
-          </Link>
-        </div>
-      </>
+      )}
+
+      {/* Configured Notifications List */}
+      {tab === 'configured' && (
+        <>
+          <ul style={listStyle} className="custom-scrollbar">
+            {notifications.map((n) => {
+              const config = getAlertConfig(n.type ?? '');
+              const typeLabel = config.label || n.type || 'Desconocido';
+              const typeColor = config.color || '#6b7280';
+              const typeIcon = config.icon || '🔔';
+              const channels: string[] = [];
+              if (n.notificators?.includes('web')) channels.push('Web');
+              if (n.notificators?.includes('mail')) channels.push('Email');
+              if (n.notificators?.includes('sms')) channels.push('SMS');
+              const channelLabel = channels.length > 0 ? channels.join(', ') : 'Web';
+              return (
+                <li
+                  key={n.id}
+                  style={notifItemStyle}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.03)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
+                >
+                  <div style={{
+                    padding: '0.375rem',
+                    borderRadius: '0.625rem',
+                    backgroundColor: `${typeColor}18`,
+                    color: typeColor,
+                    border: `1px solid ${typeColor}30`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.875rem',
+                    flexShrink: 0,
+                    minWidth: 32,
+                  }}>
+                    {typeIcon}
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontFamily: 'Outfit', fontSize: '0.8125rem', fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {typeLabel}
+                    </div>
+                    <div style={{ fontSize: '0.6875rem', color: '#94a3b8', display: 'flex', gap: '0.375rem', alignItems: 'center', marginTop: '1px' }}>
+                      <span>{channelLabel}</span>
+                      <span style={{ color: 'rgba(15, 23, 42, 0.15)' }}>·</span>
+                      <span>{n.always ? 'Siempre' : 'Programado'}</span>
+                    </div>
+                  </div>
+                  {canDeleteAlerts && (
+                    <button
+                      style={notifDeleteBtn}
+                      onClick={() => { n.id && deleteNotification.mutate(n.id); }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.08)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = '#cbd5e1'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                      title="Eliminar notificación"
+                    >
+                      <IconClose size={13} />
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+            {notifications.length === 0 && (
+              <li style={{ padding: '2.5rem 1rem', textAlign: 'center' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '12px', backgroundColor: 'rgba(15, 23, 42, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem' }}>
+                  <IconSettings size={20} style={{ color: '#cbd5e1' }} />
+                </div>
+                <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 600, color: '#64748b', fontFamily: 'Outfit' }}>Sin alertas configuradas</p>
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'Outfit' }}>Creá una alerta para comenzar</p>
+              </li>
+            )}
+          </ul>
+          <div style={{ padding: '0.5rem 0.75rem', textAlign: 'center', borderTop: '1px solid rgba(15, 23, 42, 0.05)' }}>
+            <Link
+              to="/alerts"
+              style={{ color: '#6366f1', fontSize: '0.75rem', fontWeight: 700, textDecoration: 'none', fontFamily: 'Outfit', letterSpacing: '-0.01em' }}
+            >
+              Ver todas las alertas →
+            </Link>
+          </div>
+        </>
       )}
 
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.1); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(15, 23, 42, 0.15); }
       `}</style>
 
       {canCreateAlerts && onCreateAlert && (
@@ -472,15 +468,17 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
           style={createButtonStyle}
           onClick={onCreateAlert}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.18)';
-            e.currentTarget.style.boxShadow = '0 0 20px -6px rgba(99, 102, 241, 0.3)';
+            e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.2)';
+            e.currentTarget.style.boxShadow = '0 0 20px -6px rgba(99, 102, 241, 0.35)';
+            e.currentTarget.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = '';
             e.currentTarget.style.boxShadow = '';
+            e.currentTarget.style.transform = 'none';
           }}
         >
-          <IconPlus size={16} />
+          <IconPlus size={15} />
           Crear Alerta
         </button>
       )}

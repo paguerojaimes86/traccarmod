@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { Device } from '@shared/api/types.models';
 import type { Position } from '@shared/api/types.models';
 import { StatusBadge, type DeviceStatus } from '@shared/ui/StatusBadge';
@@ -14,19 +14,19 @@ interface DeviceListItemProps {
   isSelected: boolean;
 }
 
-const itemStyle = (isSelected: boolean): CSSProperties => ({
+const itemStyle = (isSelected: boolean, isHovered: boolean): CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '0.625rem 0.75rem',
-  margin: '0.125rem 0',
+  padding: '0.5625rem 0.6875rem',
+  margin: '0.0625rem 0',
   borderRadius: '0.625rem',
   cursor: 'pointer',
-  backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+  backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.1)' : isHovered ? 'rgba(15, 23, 42, 0.03)' : 'transparent',
   border: '1px solid',
-  borderColor: isSelected ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: isSelected ? '0 0 12px -4px rgba(99, 102, 241, 0.2)' : 'none',
+  borderColor: isSelected ? 'rgba(99, 102, 241, 0.25)' : 'transparent',
+  transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: isSelected ? '0 0 14px -5px rgba(99, 102, 241, 0.25)' : 'none',
 });
 
 const nameStyle: CSSProperties = {
@@ -35,17 +35,20 @@ const nameStyle: CSSProperties = {
   fontWeight: 600,
   color: '#0f172a',
   marginBottom: '0',
+  letterSpacing: '-0.01em',
 };
 
 const detailStyle: CSSProperties = {
   fontSize: '0.6875rem',
   color: '#64748b',
+  fontWeight: 500,
 };
 
 export function DeviceListItem({ device, position, isSelected }: DeviceListItemProps) {
   const setSelectedDevice = useMapStore((s) => s.setSelectedDevice);
   const { formatSpeed } = useUnitConversion();
   const recentEvents = useAlertStore((s) => s.recentEvents);
+  const [isHovered, setIsHovered] = useState(false);
   const hasAlert = recentEvents.some((e) => e.deviceId === (device.id ?? 0));
 
   const handleClick = () => {
@@ -66,45 +69,76 @@ export function DeviceListItem({ device, position, isSelected }: DeviceListItemP
   }
 
   return (
-    <li style={itemStyle(isSelected)} onClick={handleClick}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', minWidth: 0, flex: 1 }}>
+    <li
+      style={itemStyle(isSelected, isHovered)}
+      onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0, flex: 1 }}>
         <div style={{
-          padding: '0.5rem',
+          width: 34,
+          height: 34,
+          padding: '0.4375rem',
           borderRadius: '0.625rem',
           backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.12)' : 'rgba(15, 23, 42, 0.04)',
           color: isSelected ? '#6366f1' : '#94a3b8',
           border: '1px solid',
           borderColor: isSelected ? 'rgba(99, 102, 241, 0.2)' : 'rgba(15, 23, 42, 0.04)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          transition: 'all 0.18s ease',
         }}>
-          <IconMap size={16} />
+          <IconMap size={15} />
         </div>
-        
+
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ ...nameStyle, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-               {device.name || device.uniqueId}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{
+              ...nameStyle,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: '140px',
+            }}>
+              {device.name || device.uniqueId}
             </span>
             {isMoving && (
-               <span style={{ fontSize: '0.65rem', color: '#10b981', fontWeight: 800, letterSpacing: '0.025em' }}>
-                 &bull; {formatSpeed(speed, 0)}
-               </span>
+              <span style={{ fontSize: '0.625rem', color: '#10b981', fontWeight: 800, letterSpacing: '0.02em', flexShrink: 0 }}>
+                {formatSpeed(speed, 0)}
+              </span>
             )}
           </div>
-          <div style={{ ...detailStyle, opacity: 0.7, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            {device.lastUpdate ? timeAgo(device.lastUpdate) : 'Sin datos'}
+          <div style={{ ...detailStyle, display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+            <span style={{ opacity: 0.7 }}>
+              {device.lastUpdate ? timeAgo(device.lastUpdate) : 'Sin datos'}
+            </span>
           </div>
         </div>
       </div>
-      {hasAlert && (
-        <span style={{
-          width: '0.5rem',
-          height: '0.5rem',
-          borderRadius: '9999px',
-          backgroundColor: '#ef4444',
-          boxShadow: '0 0 6px rgba(239, 68, 68, 0.5)',
-        }} />
-      )}
-      <StatusBadge status={smartStatus} />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+        {hasAlert && (
+          <span style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: '#ef4444',
+            boxShadow: '0 0 8px rgba(239, 68, 68, 0.5)',
+            animation: 'pulse-alert 2s ease-in-out infinite',
+          }} />
+        )}
+        <StatusBadge status={smartStatus} />
+      </div>
+
+      <style>{`
+        @keyframes pulse-alert {
+          0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+          50% { box-shadow: 0 0 14px rgba(239, 68, 68, 0.7); }
+        }
+      `}</style>
     </li>
   );
 }

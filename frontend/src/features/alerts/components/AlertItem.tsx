@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { EventMessage } from '@features/positions/services/websocket';
 import { getAlertConfig } from '@shared/lib/alert-types';
 import { timeAgo } from '@shared/lib/units';
@@ -19,38 +19,31 @@ const severityColors: Record<string, string> = {
   info: '#3b82f6',
 };
 
-const severityDotStyle = (severity: string): CSSProperties => ({
-  width: '0.5rem',
-  height: '0.5rem',
-  borderRadius: '9999px',
-  backgroundColor: severityColors[severity] ?? '#6b7280',
-  flexShrink: 0,
-});
-
 const itemStyle = (isHovered: boolean): CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '0.625rem 0.75rem',
-  margin: '0.125rem 0',
+  padding: '0.5625rem 0.6875rem',
+  margin: '0.0625rem 0',
   borderRadius: '0.625rem',
   cursor: 'pointer',
   backgroundColor: isHovered ? 'rgba(15, 23, 42, 0.04)' : 'transparent',
   border: '1px solid transparent',
-  transition: 'background-color 0.2s ease, border-color 0.2s ease',
+  transition: 'all 0.18s ease',
 });
 
 const iconContainerStyle = (color: string): CSSProperties => ({
   padding: '0.375rem',
   borderRadius: '0.625rem',
   backgroundColor: `${color}18`,
-  color,
+  color: color,
   border: `1px solid ${color}30`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: '1rem',
+  fontSize: '0.875rem',
   flexShrink: 0,
+  minWidth: 32,
 });
 
 const nameStyle: CSSProperties = {
@@ -61,6 +54,7 @@ const nameStyle: CSSProperties = {
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
+  letterSpacing: '-0.01em',
 };
 
 const detailStyle: CSSProperties = {
@@ -69,6 +63,7 @@ const detailStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: '0.375rem',
+  fontWeight: 500,
 };
 
 const deleteButtonStyle: CSSProperties = {
@@ -77,49 +72,67 @@ const deleteButtonStyle: CSSProperties = {
   background: 'transparent',
   borderRadius: '0.375rem',
   cursor: 'pointer',
-  color: 'var(--text-muted)',
+  color: '#cbd5e1',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'color 0.2s ease, background-color 0.2s ease',
+  transition: 'all 0.18s ease',
   flexShrink: 0,
 };
 
 export function AlertItem({ event, onDelete, canDelete, onClick, deviceName }: AlertItemProps) {
   const config = getAlertConfig(event.type);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete?.(event.id);
   };
 
+  const categoryLabel = config.category === 'status' ? 'Estado'
+    : config.category === 'movement' ? 'Movimiento'
+    : config.category === 'geofence' ? 'Geozona'
+    : config.category === 'speed' ? 'Velocidad'
+    : config.category === 'alarm' ? 'Alarma'
+    : config.category === 'maintenance' ? 'Mant.'
+    : config.category;
+
   return (
     <li
-      style={itemStyle(false)}
+      style={itemStyle(isHovered)}
       onClick={onClick}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget;
-        el.style.backgroundColor = 'rgba(15, 23, 42, 0.04)';
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget;
-        el.style.backgroundColor = 'transparent';
-      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0, flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minWidth: 0, flex: 1 }}>
         <div style={iconContainerStyle(config.color)}>
           {config.icon}
         </div>
 
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={nameStyle}>{deviceName ?? `Dispositivo #${event.deviceId}`}</span>
-            <span style={{ fontSize: '0.65rem', color: config.color, fontWeight: 700, fontFamily: 'Outfit' }}>
-              {config.label}
+            <span style={nameStyle} title={deviceName ?? `Dispositivo #${event.deviceId}`}>
+              {deviceName ?? `#${event.deviceId}`}
+            </span>
+            <span style={{
+              fontSize: '0.5625rem',
+              color: config.color,
+              fontWeight: 800,
+              fontFamily: 'Outfit',
+              letterSpacing: '0.02em',
+              flexShrink: 0,
+            }}>
+              {categoryLabel.toUpperCase()}
             </span>
           </div>
           <div style={detailStyle}>
-            <span style={severityDotStyle(config.severity)} />
+            <span style={{
+              width: 5,
+              height: 5,
+              borderRadius: '50%',
+              backgroundColor: severityColors[config.severity] ?? '#6b7280',
+              flexShrink: 0,
+            }} />
             <span>{timeAgo(event.eventTime)}</span>
           </div>
         </div>
@@ -135,11 +148,11 @@ export function AlertItem({ event, onDelete, canDelete, onClick, deviceName }: A
             e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.08)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = '#94a3b8';
+            e.currentTarget.style.color = '#cbd5e1';
             e.currentTarget.style.backgroundColor = 'transparent';
           }}
         >
-          <IconTrash2 size={14} />
+          <IconTrash2 size={13} />
         </button>
       )}
     </li>

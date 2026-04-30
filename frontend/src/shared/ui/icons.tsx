@@ -47,6 +47,7 @@ import {
   Camera,
   Zap,
   Droplets,
+  LogOut,
 } from 'lucide-react';
 
 export interface IconProps {
@@ -248,4 +249,8 @@ export function IconLayoutDashboard({ size = defaultProps.size, style, className
 
 export function IconFileBarChart({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
   return <FileBarChart size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconLogout({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <LogOut size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
 }

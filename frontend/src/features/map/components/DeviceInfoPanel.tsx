@@ -5,13 +5,13 @@ import { useDevicePosition } from '@features/positions/hooks/usePositions';
 import { useUnitConversion } from '@shared/hooks/useUnitConversion';
 import { StatusBadge, type DeviceStatus } from '@shared/ui/StatusBadge';
 import { formatDuration, formatTimestamp } from '@shared/lib/units';
-import { 
-  IconSettings, 
-  IconBattery, 
-  IconSatellite, 
-  IconRoute, 
-  IconClock, 
-  IconSignal, 
+import {
+  IconSettings,
+  IconBattery,
+  IconSatellite,
+  IconRoute,
+  IconClock,
+  IconSignal,
   IconMap,
   IconNavigation,
   IconClose,
@@ -20,8 +20,6 @@ import {
 } from '@shared/ui/icons';
 import type { Device } from '@shared/api/types.models';
 import type { Position } from '@shared/api/types.models';
-
-// ─── Tipos ────────────────────────────────────────────────────────────────────
 
 type PositionAttributes = Record<string, unknown>;
 
@@ -47,30 +45,28 @@ interface SensorsCardProps {
   speedFormatted: string;
 }
 
-// ─── Estilos "Cinemsatic Horizontal" ─────────────────────────────────────────
-
 const overlayStyle: CSSProperties = {
   position: 'absolute',
   bottom: '1rem',
   left: '50%',
   transform: 'translateX(-50%)',
   width: 'calc(100% - 2rem)',
-  maxWidth: '1100px',
+  maxWidth: '1050px',
   zIndex: 10,
   display: 'flex',
-  gap: '0.625rem',
+  gap: '0.5rem',
   pointerEvents: 'none',
   alignItems: 'stretch',
 };
 
 const cardStyle: CSSProperties = {
   flex: 1,
-  backgroundColor: 'rgba(255, 255, 255, 0.92)',
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(16px)',
-  border: '1px solid rgba(15, 23, 42, 0.08)',
+  border: '1px solid rgba(15, 23, 42, 0.07)',
   borderRadius: '0.875rem',
-  padding: '0.75rem 1rem',
-  boxShadow: '0 4px 20px rgba(15, 23, 42, 0.08)',
+  padding: '0.6875rem 0.9375rem',
+  boxShadow: '0 8px 32px rgba(15, 23, 42, 0.1)',
   pointerEvents: 'auto',
   color: '#0f172a',
   display: 'flex',
@@ -83,7 +79,7 @@ const cardHeaderStyle: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'space-between',
   marginBottom: '0.5rem',
-  paddingBottom: '0.4rem',
+  paddingBottom: '0.375rem',
   borderBottom: '1px solid rgba(15, 23, 42, 0.06)',
 };
 
@@ -91,9 +87,10 @@ const cardTitleStyle: CSSProperties = {
   fontFamily: 'Outfit',
   display: 'flex',
   alignItems: 'center',
-  gap: '0.625rem',
-  fontSize: '0.9375rem',
+  gap: '0.5rem',
+  fontSize: '0.875rem',
   fontWeight: 700,
+  letterSpacing: '-0.01em',
 };
 
 const rowContainerStyle: CSSProperties = {
@@ -109,17 +106,19 @@ const rowStyle: CSSProperties = {
 };
 
 const labelStyle: CSSProperties = {
-  fontSize: '0.6rem',
+  fontSize: '0.5875rem',
   color: '#94a3b8',
   fontWeight: 700,
   textTransform: 'uppercase',
-  letterSpacing: '0.05em',
+  letterSpacing: '0.06em',
+  fontFamily: 'Outfit',
 };
 
 const valueStyle: CSSProperties = {
   fontSize: '0.8125rem',
   color: '#1e293b',
   fontWeight: 600,
+  fontFamily: 'Outfit',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
@@ -128,100 +127,117 @@ const valueStyle: CSSProperties = {
 const sensorGridStyle: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: '0.4rem',
+  gap: '0.375rem',
 };
 
-const sensorCardStyle = (highlight: boolean): CSSProperties => ({
+const sensorCardStyle = (highlight: boolean, highlightColor: string): CSSProperties => ({
   display: 'flex',
   flexDirection: 'column',
-  padding: '0.4rem 0.625rem',
+  padding: '0.375rem 0.5rem',
   borderRadius: '0.625rem',
-  backgroundColor: highlight ? 'rgba(99, 102, 241, 0.1)' : 'rgba(15, 23, 42, 0.03)',
+  backgroundColor: highlight ? `${highlightColor}12` : 'rgba(15, 23, 42, 0.03)',
   border: '1px solid',
-  borderColor: highlight ? 'rgba(99, 102, 241, 0.25)' : 'rgba(15, 23, 42, 0.06)',
+  borderColor: highlight ? `${highlightColor}35` : 'rgba(15, 23, 42, 0.06)',
+  transition: 'all 0.2s ease',
 });
 
-// ─── InfoCard ─────────────────────────────────────────────────────────────────
-
-const InfoCard = memo(function InfoCard({
-  device,
-  address,
-  fixTime,
-  isMoving,
-  stoppedDuration,
-  speedFormatted,
-  followMode,
-  onToggleFollow,
-  onClose,
-}: InfoCardProps) {
+function InfoCard({ device, address, fixTime, isMoving, stoppedDuration, speedFormatted, followMode, onToggleFollow, onClose }: InfoCardProps) {
   const showHistory = useMapStore((s) => s.showHistory);
   const setShowHistory = useMapStore((s) => s.setShowHistory);
   const status = (device.status ?? 'unknown') as DeviceStatus;
 
   return (
-    <div style={{ ...cardStyle, flex: '0 0 440px' }}>
+    <div style={{ ...cardStyle, flex: '0 0 420px' }}>
       <div style={cardHeaderStyle}>
         <div style={cardTitleStyle}>
-          <IconMap size={16} style={{ color: 'var(--accent)' }} />
-          <span>{device.name || device.uniqueId}</span>
+          <div style={{
+            width: 28,
+            height: 28,
+            borderRadius: '8px',
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            color: '#6366f1',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <IconMap size={14} />
+          </div>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>{device.name || device.uniqueId}</span>
           <StatusBadge status={status} />
         </div>
-        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-          <button 
+        <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+          <button
             title={showHistory ? "Ocultar Historial" : "Ver Historial"}
-            style={{ 
-              padding: '0.35rem 0.6rem', 
+            style={{
+              padding: '0.3rem 0.5rem',
               border: '1px solid',
-              borderColor: showHistory ? 'var(--accent)' : 'rgba(15, 23, 42, 0.1)',
-              background: showHistory ? 'rgba(99, 102, 241, 0.1)' : 'rgba(15, 23, 42, 0.03)', 
+              borderColor: showHistory ? '#6366f1' : 'rgba(15, 23, 42, 0.08)',
+              background: showHistory ? 'rgba(99, 102, 241, 0.12)' : 'rgba(15, 23, 42, 0.03)',
               borderRadius: '0.5rem',
-              cursor: 'pointer', 
-              color: showHistory ? 'var(--accent)' : '#64748b',
+              cursor: 'pointer',
+              color: showHistory ? '#6366f1' : '#64748b',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              fontSize: '0.65rem',
-              fontWeight: 700,
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              pointerEvents: 'auto'
-            }} 
+              gap: '0.3rem',
+              fontSize: '0.5875rem',
+              fontWeight: 800,
+              fontFamily: 'Outfit',
+              transition: 'all 0.2s ease',
+              letterSpacing: '0.02em',
+            }}
             onClick={() => setShowHistory(!showHistory)}
+            onMouseEnter={(e) => { if (!showHistory) { e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.08)'; e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)'; } }}
+            onMouseLeave={(e) => { if (!showHistory) { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.03)'; e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.08)'; } }}
           >
-            {showHistory ? <IconEyeOff size={14} /> : <IconHistory size={14} />}
-            <span style={{ fontSize: '0.6rem' }}>{showHistory ? 'CERRAR' : 'HISTORIAL'}</span>
+            {showHistory ? <IconEyeOff size={12} /> : <IconHistory size={12} />}
+            <span>{showHistory ? 'CERRAR' : 'HISTORIAL'}</span>
           </button>
 
-          <button 
-            title={followMode ? "Desactivar Auto-pilot" : "Activar Auto-pilot (Seguimiento)"}
-            style={{ 
-              padding: '0.35rem 0.6rem', 
+          <button
+            title={followMode ? "Desactivar Auto-pilot" : "Activar Auto-pilot"}
+            style={{
+              padding: '0.3rem 0.5rem',
               border: '1px solid',
-              borderColor: followMode ? 'var(--accent)' : 'rgba(15, 23, 42, 0.1)',
-              background: followMode ? 'rgba(99, 102, 241, 0.1)' : 'rgba(15, 23, 42, 0.03)', 
+              borderColor: followMode ? '#6366f1' : 'rgba(15, 23, 42, 0.08)',
+              background: followMode ? 'rgba(99, 102, 241, 0.12)' : 'rgba(15, 23, 42, 0.03)',
               borderRadius: '0.5rem',
-              cursor: 'pointer', 
-              color: followMode ? 'var(--accent)' : '#64748b',
+              cursor: 'pointer',
+              color: followMode ? '#6366f1' : '#64748b',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              fontSize: '0.65rem',
-              fontWeight: 700,
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              pointerEvents: 'auto'
-            }} 
+              gap: '0.3rem',
+              fontSize: '0.5875rem',
+              fontWeight: 800,
+              fontFamily: 'Outfit',
+              transition: 'all 0.2s ease',
+              letterSpacing: '0.02em',
+            }}
             onClick={onToggleFollow}
+            onMouseEnter={(e) => { if (!followMode) { e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.08)'; e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)'; } }}
+            onMouseLeave={(e) => { if (!followMode) { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.03)'; e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.08)'; } }}
           >
-            <IconNavigation size={14} style={{ transform: followMode ? 'rotate(45deg)' : 'none', transition: 'transform 0.3s ease' }} />
-            {followMode && <span style={{ letterSpacing: '0.05em', fontSize: '0.6rem' }}>AUTO-PILOT</span>}
+            <IconNavigation size={12} style={{ transform: followMode ? 'rotate(45deg)' : 'none', transition: 'transform 0.3s ease' }} />
+            {followMode && <span>AUTO</span>}
           </button>
-          
-          <div style={{ width: '1px', height: '1.25rem', backgroundColor: 'rgba(15, 23, 42, 0.1)', margin: '0 0.125rem' }} />
 
-          <button 
-            style={{ padding: '0.25rem', border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }} 
+          <div style={{ width: '1px', height: '1rem', backgroundColor: 'rgba(15, 23, 42, 0.1)', margin: '0 0.125rem' }} />
+
+          <button
+            style={{
+              padding: '0.25rem',
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              color: '#94a3b8',
+              display: 'flex',
+              transition: 'all 0.2s ease',
+              borderRadius: '6px',
+            }}
             onClick={onClose}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.06)'; e.currentTarget.style.color = '#0f172a'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}
           >
-            <IconClose size={18} />
+            <IconClose size={16} />
           </button>
         </div>
       </div>
@@ -229,11 +245,11 @@ const InfoCard = memo(function InfoCard({
       <div style={rowContainerStyle}>
         <div style={{ ...rowStyle, gridColumn: 'span 2' }}>
           <span style={labelStyle}>Ubicación</span>
-          <span style={{ ...valueStyle, color: 'var(--accent-hover)' }} title={address}>
+          <span style={{ ...valueStyle, color: '#6366f1' }} title={address}>
             {address ?? 'Determinando ubicación...'}
           </span>
         </div>
-        
+
         <div style={rowStyle}>
           <span style={labelStyle}>Último Reporte</span>
           <span style={valueStyle}>{fixTime ? formatTimestamp(fixTime) : '—'}</span>
@@ -248,46 +264,47 @@ const InfoCard = memo(function InfoCard({
       </div>
     </div>
   );
-});
+}
 
-// ─── SensorsCard ─────────────────────────────────────────────────────────────
-
-const SensorsCard = memo(function SensorsCard({
-  ignition,
-  batteryFormatted,
-  satellites,
-  odometerFormatted,
-  hoursFormatted,
-  rssi,
-  speedFormatted,
-}: SensorsCardProps) {
+function SensorsCard({ ignition, batteryFormatted, satellites, odometerFormatted, hoursFormatted, rssi, speedFormatted }: SensorsCardProps) {
   const sensors = [
-    { label: 'Motor', value: ignition === true ? 'ON' : 'OFF', icon: <IconSettings size={12} />, highlight: ignition === true, color: ignition ? '#10b981' : '#64748b' },
-    { label: 'Batería', value: batteryFormatted, icon: <IconBattery size={12} />, color: '#818cf8' },
-    { label: 'Sat', value: satellites != null ? String(satellites) : '0', icon: <IconSatellite size={12} />, color: '#818cf8' },
-    { label: 'Odómetro', value: odometerFormatted, icon: <IconRoute size={12} />, color: '#818cf8' },
-    { label: 'Uso Motor', value: hoursFormatted, icon: <IconClock size={12} />, color: '#818cf8' },
-    { label: 'Señal', value: rssi != null ? `${rssi}/5` : '—', icon: <IconSignal size={12} />, color: '#818cf8' },
+    { label: 'Motor', value: ignition === true ? 'ON' : 'OFF', icon: <IconSettings size={11} />, highlight: ignition === true, color: '#10b981' },
+    { label: 'Bat.', value: batteryFormatted, icon: <IconBattery size={11} />, color: '#818cf8' },
+    { label: 'Sat', value: satellites != null ? String(satellites) : '—', icon: <IconSatellite size={11} />, color: '#818cf8' },
+    { label: 'Odóm.', value: odometerFormatted, icon: <IconRoute size={11} />, color: '#818cf8' },
+    { label: 'Motor H.', value: hoursFormatted, icon: <IconClock size={11} />, color: '#818cf8' },
+    { label: 'Signal', value: rssi != null ? `${rssi}/5` : '—', icon: <IconSignal size={11} />, color: '#818cf8' },
   ];
 
   return (
     <div style={cardStyle}>
       <div style={cardHeaderStyle}>
         <div style={cardTitleStyle}>
-          <IconSettings size={16} style={{ color: '#fbbf24' }} />
-          <span>Telemetría en Tiempo Real</span>
+          <div style={{
+            width: 28,
+            height: 28,
+            borderRadius: '8px',
+            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+            color: '#fbbf24',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <IconSettings size={14} />
+          </div>
+          <span style={{ fontSize: '0.8125rem' }}>Telemetría</span>
         </div>
-        <div style={{ color: 'var(--accent-hover)', fontSize: '0.9375rem', fontWeight: 800 }}>{speedFormatted}</div>
+        <div style={{ color: '#6366f1', fontSize: '1rem', fontWeight: 800, fontFamily: 'Outfit', letterSpacing: '-0.02em' }}>{speedFormatted}</div>
       </div>
 
       <div style={sensorGridStyle}>
         {sensors.map(({ label, value, icon, highlight, color }) => (
-          <div key={label} style={sensorCardStyle(highlight || false)}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.55rem', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.025em' }}>
+          <div key={label} style={sensorCardStyle(highlight || false, color)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.55rem', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.04em', fontFamily: 'Outfit' }}>
               <span style={{ color }}>{icon}</span>
               <span>{label}</span>
             </div>
-            <p style={{ fontSize: '0.75rem', color: highlight ? '#10b981' : '#1e293b', fontWeight: 800, margin: 0 }}>
+            <p style={{ fontSize: '0.75rem', color: highlight ? '#10b981' : '#1e293b', fontWeight: 800, margin: '2px 0 0', fontFamily: 'Outfit', letterSpacing: '-0.01em' }}>
               {value}
             </p>
           </div>
@@ -295,9 +312,7 @@ const SensorsCard = memo(function SensorsCard({
       </div>
     </div>
   );
-});
-
-// ─── DeviceInfoPanel ─────────────────────────────────────────────────────────
+}
 
 export function DeviceInfoPanel() {
   const selectedDeviceId = useMapStore((s) => s.selectedDeviceId);
@@ -312,16 +327,14 @@ export function DeviceInfoPanel() {
   const deviceMap = useMemo(() => new Map(devices.map((d) => [d.id, d])), [devices]);
 
   if (!selectedDeviceId) return null;
-
   const device = deviceMap.get(selectedDeviceId);
-
   if (!device) return null;
 
   const attrs = ((position?.attributes ?? {}) as unknown) as PositionAttributes;
   const isMoving = (position?.speed ?? 0) > 0;
   const stoppedDuration = !isMoving && position?.fixTime
-      ? formatDuration(Math.max(0, Date.now() - new Date(position.fixTime).getTime()) / 1000)
-      : '';
+    ? formatDuration(Math.max(0, Date.now() - new Date(position.fixTime).getTime()) / 1000)
+    : '';
 
   const speedFormatted = position?.speed != null ? formatSpeed(position.speed, 0) : '0 km/h';
 

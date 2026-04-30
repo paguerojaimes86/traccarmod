@@ -9,6 +9,12 @@ export const QUERY_KEYS = {
   session: ['session'] as const,
   groups: ['groups'] as const,
   reports: ['reports'] as const,
+  reportSummary: (params: { deviceId?: number[]; groupId?: number[]; from: string; to: string }) =>
+    ['reports', 'summary', params] as const,
+  reportTrips: (params: { deviceId?: number[]; groupId?: number[]; from: string; to: string }) =>
+    ['reports', 'trips', params] as const,
+  reportStops: (params: { deviceId?: number[]; groupId?: number[]; from: string; to: string }) =>
+    ['reports', 'stops', params] as const,
   users: ['users'] as const,
   commands: ['commands'] as const,
   server: ['server'] as const,

@@ -2,23 +2,23 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { apiClient } from '@shared/api/client';
 import { QUERY_KEYS } from '@shared/lib/constants';
 
-interface SummaryParams {
+interface ReportParams {
   deviceId?: number[];
   groupId?: number[];
   from: string;
   to: string;
 }
 
-export function useSummaryReport(params: SummaryParams | null) {
+export function useTripsReport(params: ReportParams | null) {
   const hasDevices = params && (params.deviceId?.length ?? 0) > 0;
 
   return useQuery({
     queryKey: hasDevices
-      ? [...QUERY_KEYS.reports, 'summary', params.from, params.to, params.deviceId]
-      : [...QUERY_KEYS.reports, 'summary'],
+      ? [...QUERY_KEYS.reports, 'trips', params.from, params.to, params.deviceId]
+      : [...QUERY_KEYS.reports, 'trips'],
     queryFn: async () => {
       if (!params || !hasDevices) return [];
-      const { data, error } = await apiClient.GET('/reports/summary', {
+      const { data, error } = await apiClient.GET('/reports/trips', {
         params: {
           query: {
             deviceId: params.deviceId,

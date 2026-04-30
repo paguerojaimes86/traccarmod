@@ -8,12 +8,20 @@ const DEBUG = import.meta.env.DEV;
 
 export const apiClient = createClient<paths>({
   baseUrl: BASE_URL,
+  headers: {
+    Accept: 'application/json',
+  },
   fetch: async (request: Request) => {
     const { token } = useAuthStore.getState();
     const headers = new Headers(request.headers);
 
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    // Force Accept: application/json for all requests (Traccar returns Excel by default)
+    if (!headers.has('Accept')) {
+      headers.set('Accept', 'application/json');
     }
 
     const newRequest = new Request(request, {
