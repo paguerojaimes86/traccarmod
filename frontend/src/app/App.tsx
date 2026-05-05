@@ -39,6 +39,7 @@ const CalendarsPage = lazy(() => import('@features/calendars/pages/CalendarsPage
 const AttributesPage = lazy(() => import('@features/attributes/pages/AttributesPage'));
 const OrdersPage = lazy(() => import('@features/orders/pages/OrdersPage'));
 const StatisticsPage = lazy(() => import('@features/statistics/pages/StatisticsPage'));
+import { PublicView } from '@features/public/PublicView';
 
 function AuthRedirect({ children }: { children: ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -54,6 +55,7 @@ export function App() {
       <BrowserRouter>
         <Suspense fallback={<LoadingState />}>
           <Routes>
+            <Route path="/v/:token" element={<PublicView />} />
             <Route
               path="/login"
               element={

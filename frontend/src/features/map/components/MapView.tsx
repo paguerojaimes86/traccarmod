@@ -16,6 +16,7 @@ export function MapView({ children }: { children?: ReactNode }) {
   const fromMapRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const [styleVersion, setStyleVersion] = useState(0);
+  const [toast, setToast] = useState('');
 
   const center = useMapStore((s) => s.center);
   const zoom = useMapStore((s) => s.zoom);
@@ -233,7 +234,7 @@ export function MapView({ children }: { children?: ReactNode }) {
 
       {/* Botón Compartir */}
       <button
-        onClick={() => {
+        onClick={async () => {
           const ids: number[] = [];
           if (selectedDeviceId) {
             ids.push(selectedDeviceId);
@@ -243,11 +244,26 @@ export function MapView({ children }: { children?: ReactNode }) {
             }
           }
           if (ids.length === 0) return;
-          const url = `${window.location.origin}/?vehiculos=${ids.join(',')}`;
-          navigator.clipboard.writeText(url).then(() => {
-            const el = document.getElementById('share-feedback');
-            if (el) { el.style.opacity = '1'; setTimeout(() => { el.style.opacity = '0'; }, 2000); }
-          });
+          try {
+            const resp = await fetch('/api/public/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ deviceIds: ids }),
+            });
+            const data = await resp.json();
+            if (data.url) {
+              await navigator.clipboard.writeText(data.url);
+              setToast('Link público copiado');
+              setTimeout(() => setToast(''), 2500);
+            }
+          } catch {
+            // fallback: copiar link interno con login
+            const url = `${window.location.origin}/?vehiculos=${ids.join(',')}`;
+            await navigator.clipboard.writeText(url);
+            setToast('Link copiado (requiere login)');
+            setTimeout(() => setToast(''), 2500);
+            return;
+          }
         }}
         title="Compartir ubicación"
         style={{
@@ -274,13 +290,16 @@ export function MapView({ children }: { children?: ReactNode }) {
       >
         <IconLink size={16} />
       </button>
-      <div id="share-feedback" style={{
-        position: 'absolute', top: 96, right: 54, zIndex: 10,
-        padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-        backgroundColor: 'rgba(16, 185, 129, 0.9)', color: '#fff',
-        fontFamily: 'Outfit, sans-serif', opacity: 0, transition: 'opacity 0.3s',
-        pointerEvents: 'none', whiteSpace: 'nowrap',
-      }}>Link copiado</div>
+
+      {toast && (
+        <div style={{
+          position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)', zIndex: 20,
+          padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+          backgroundColor: 'rgba(16, 185, 129, 0.95)', color: '#fff',
+          fontFamily: 'Outfit, sans-serif', boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+          pointerEvents: 'none', whiteSpace: 'nowrap',
+        }}>{toast}</div>
+      )}
 
       {mapReady && mapRef.current && (
         <MapContext.Provider value={ctxValue}>
