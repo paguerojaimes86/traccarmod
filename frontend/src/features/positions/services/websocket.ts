@@ -49,8 +49,12 @@ let statusListeners: Set<(status: 'connected' | 'reconnecting' | 'disconnected')
 
 function getWsUrl(): string {
   if (WS_URL) return WS_URL;
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${protocol}//${window.location.host}/api/socket`;
+  if (import.meta.env.DEV) {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}/api/socket`;
+  }
+  // Production: connect directly to Traccar server (same host as API client)
+  return 'wss://gps.msglobalgps.com/api/socket';
 }
 
 function clearReconnect() {
