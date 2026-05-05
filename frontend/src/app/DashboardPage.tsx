@@ -66,26 +66,27 @@ export function DashboardPage() {
               position: 'absolute',
               top: 12,
               right: 12,
-              zIndex: 2,
-              padding: '0.4rem 0.6rem',
+              zIndex: 10,
+              width: 36,
+              height: 36,
               border: '1px solid',
-              borderColor: showRoutes ? 'var(--color-primary)' : 'rgba(15, 23, 42, 0.1)',
-              background: showRoutes ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.92)',
-              borderRadius: '0.5rem',
+              borderColor: showRoutes ? 'rgba(99, 102, 241, 0.3)' : 'rgba(15, 23, 42, 0.08)',
+              borderRadius: '0.625rem',
+              backgroundColor: showRoutes ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.92)',
+              backdropFilter: 'blur(8px)',
+              color: showRoutes ? '#6366f1' : '#64748b',
               cursor: 'pointer',
-              color: showRoutes ? 'var(--color-primary)' : '#64748b',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              fontSize: '0.65rem',
-              fontWeight: 700,
-              transition: 'border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+              justifyContent: 'center',
+              boxShadow: showRoutes ? '0 2px 8px rgba(99, 102, 241, 0.15)' : '0 2px 8px rgba(15, 23, 42, 0.1)',
+              transition: 'all 0.15s',
             }}
             onClick={() => setShowRoutes(!showRoutes)}
+            onMouseEnter={(e) => { if (!showRoutes) { e.currentTarget.style.backgroundColor = '#ffffff'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 23, 42, 0.15)'; }}}
+            onMouseLeave={(e) => { if (!showRoutes) { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.92)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 23, 42, 0.1)'; }}}
           >
-            {showRoutes ? <IconEyeOff size={14} /> : <IconEye size={14} />}
-            <span>{showRoutes ? 'RUTAS' : 'RUTAS'}</span>
+            {showRoutes ? <IconEyeOff size={16} /> : <IconEye size={16} />}
           </button>
 
           {showMileageReport && (

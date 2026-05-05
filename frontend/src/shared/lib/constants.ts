@@ -24,6 +24,13 @@ export const QUERY_KEYS = {
   events: ['events'] as const,
   reportEvents: (params: { deviceId?: number | number[]; type?: string | string[]; from: string; to: string }) =>
     ['reportEvents', params] as const,
+  // CRUD components
+  maintenance: ['maintenance'] as const,
+  drivers: ['drivers'] as const,
+  calendars: ['calendars'] as const,
+  attributes: ['attributes'] as const,
+  orders: ['orders'] as const,
+  statistics: (from: string, to: string) => ['statistics', from, to] as const,
 } as const;
 
 export const WS_URL = import.meta.env.VITE_WS_URL || '';

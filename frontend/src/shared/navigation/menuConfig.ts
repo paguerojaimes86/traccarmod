@@ -11,6 +11,12 @@ import {
   IconHierarchy2,
   IconTerminal2,
   IconSettings,
+  IconTool,
+  IconId,
+  IconCalendar,
+  IconVariable,
+  IconShoppingCart,
+  IconChartHistogram,
 } from '@tabler/icons-react';
 
 // Tabler icon props interface
@@ -66,7 +72,7 @@ export const menuConfig: MenuItem[] = [
     path: '/users',
     icon: IconUsers,
     category: 'Gestión',
-    visibleWhen: (p) => p.canManageUsers,
+    visibleWhen: () => true,
   },
   {
     label: 'Grupos',
@@ -83,11 +89,53 @@ export const menuConfig: MenuItem[] = [
     visibleWhen: () => true,
   },
   {
+    label: 'Mantenimiento',
+    path: '/maintenance',
+    icon: IconTool,
+    category: 'Gestión',
+    visibleWhen: (_p) => true,
+  },
+  {
+    label: 'Conductores',
+    path: '/drivers',
+    icon: IconId,
+    category: 'Gestión',
+    visibleWhen: (_p) => true,
+  },
+  {
+    label: 'Calendarios',
+    path: '/calendars',
+    icon: IconCalendar,
+    category: 'Gestión',
+    visibleWhen: () => true,
+  },
+  {
+    label: 'Atributos',
+    path: '/attributes',
+    icon: IconVariable,
+    category: 'Gestión',
+    visibleWhen: () => true,
+  },
+  {
+    label: 'Órdenes',
+    path: '/orders',
+    icon: IconShoppingCart,
+    category: 'Gestión',
+    visibleWhen: (_p) => true,
+  },
+  {
+    label: 'Estadísticas',
+    path: '/statistics',
+    icon: IconChartHistogram,
+    category: 'Gestión',
+    visibleWhen: () => true,
+  },
+  {
     label: 'Configuración',
     path: '/settings',
     icon: IconSettings,
     category: 'Sistema',
-    visibleWhen: (p) => p.isAdmin,
+    visibleWhen: () => true,
   },
 ];
 

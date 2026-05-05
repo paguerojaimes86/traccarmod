@@ -1,6 +1,6 @@
 import { useState, useMemo, type CSSProperties } from 'react';
 import { Pencil } from 'lucide-react';
-import { IconSearch, IconTrash2 } from '@shared/ui/icons';
+import { IconSearch, IconTrash2, IconLink } from '@shared/ui/icons';
 import { LoadingState, ErrorState } from '@shared/ui';
 import { useEscapeKey } from '@shared/hooks';
 import type { Device, Group } from '@shared/api/types.models';
@@ -14,6 +14,7 @@ interface DeviceTableProps {
   canManage: boolean;
   onEdit: (device: Device) => void;
   onDelete: (device: Device) => void;
+  onLink?: (device: Device) => void;
 }
 
 const PAGE_SIZE = 10;
@@ -182,6 +183,7 @@ export function DeviceTable({
   canManage,
   onEdit,
   onDelete,
+  onLink,
 }: DeviceTableProps) {
   const [keyword, setKeyword] = useState('');
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -338,6 +340,18 @@ export function DeviceTable({
                     >
                       <Pencil size={16} />
                     </button>
+                    {onLink && (
+                      <button
+                        style={{ ...actionBtnStyle, color: '#10b981' }}
+                        onClick={() => onLink(device)}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.08)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                        title="Vincular atributos"
+                        aria-label="Vincular atributos"
+                      >
+                        <IconLink size={16} />
+                      </button>
+                    )}
                     <button
                       style={{ ...actionBtnStyle, color: '#ef4444' }}
                       onClick={() => setConfirmDevice(device)}

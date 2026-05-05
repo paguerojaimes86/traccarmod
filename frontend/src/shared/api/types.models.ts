@@ -17,3 +17,9 @@ export type ReportSummary = components['schemas']['ReportSummary'];
 export type ReportTrips = components['schemas']['ReportTrips'];
 export type ReportStops = components['schemas']['ReportStops'];
 export type NotificationType = components['schemas']['NotificationType'];
+export type Attribute = components['schemas']['Attribute'];
+export interface AttributeWithPriority extends Attribute {
+  priority?: number;
+}
+export type Order = components['schemas']['Order'];
+export type Statistics = components['schemas']['Statistics'];

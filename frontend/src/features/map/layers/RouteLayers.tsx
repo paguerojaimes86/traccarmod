@@ -61,6 +61,27 @@ export function RouteLayers({ visible = true }: RouteLayersProps) {
           },
         });
 
+        // Etiqueta con el nombre de la ruta sobre la línea
+        const labelLayerId = `route-label-${route.id}`;
+        map.addLayer({
+          id: labelLayerId,
+          type: 'symbol',
+          source: sourceId,
+          layout: {
+            'symbol-placement': 'line',
+            'text-field': (route.routeLabel ?? '').toUpperCase(),
+            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+            'text-size': 11,
+            'text-letter-spacing': 0.04,
+            'text-offset': [0, -1.2],
+          },
+          paint: {
+            'text-color': color,
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 2,
+          },
+        });
+
         // Click handler: show popup with route label
         const clickHandler = (e: MapMouseEvent) => {
           const coordinates = e.lngLat;
@@ -93,6 +114,7 @@ export function RouteLayers({ visible = true }: RouteLayersProps) {
       addedRef.current.forEach((sourceId) => {
         const id = sourceId.replace('route-src-', '');
         const lineId = `route-line-${id}`;
+        const labelId = `route-label-${id}`;
         const handlers = handlersRef.current.get(lineId);
         try {
           if (handlers) {
@@ -101,6 +123,7 @@ export function RouteLayers({ visible = true }: RouteLayersProps) {
             map.off('mouseleave', lineId, handlers.leave);
             handlersRef.current.delete(lineId);
           }
+          if (map.getLayer(labelId)) map.removeLayer(labelId);
           if (map.getLayer(lineId)) map.removeLayer(lineId);
           if (map.getSource(sourceId)) map.removeSource(sourceId);
         } catch {
@@ -118,29 +141,33 @@ export function RouteLayers({ visible = true }: RouteLayersProps) {
       style={{
         position: 'absolute',
         bottom: 24,
-        left: 12,
+        right: 12,
         background: 'rgba(255, 255, 255, 0.92)',
-        borderRadius: 6,
-        padding: '6px 10px',
-        fontSize: 12,
-        lineHeight: 1.6,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+        backdropFilter: 'blur(8px)',
+        borderRadius: 8,
+        padding: '8px 12px',
+        fontSize: 11,
+        lineHeight: 1.8,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         zIndex: 1,
         pointerEvents: 'none',
+        border: '1px solid rgba(15, 23, 42, 0.06)',
       }}
     >
       {routes.map((route) => (
-        <div key={route.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div key={route.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span
             style={{
               display: 'inline-block',
-              width: 16,
+              width: 18,
               height: 3,
               borderRadius: 2,
               background: getRouteColor(route),
             }}
           />
-          <span>{route.routeLabel}</span>
+          <span style={{ fontWeight: 700, letterSpacing: '0.04em', color: '#0f172a' }}>
+            {(route.routeLabel ?? '').toUpperCase()}
+          </span>
         </div>
       ))}
     </div>

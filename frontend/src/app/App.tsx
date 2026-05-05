@@ -15,6 +15,12 @@ import {
   canViewCommands,
   canViewReports,
   canViewSettings,
+  canViewMaintenance,
+  canViewDrivers,
+  canViewCalendars,
+  canViewAttributes,
+  canViewOrders,
+  canViewStatistics,
 } from '@shared/permissions';
 
 const LoginPage = lazy(() => import('@features/auth/components/LoginPage'));
@@ -27,6 +33,12 @@ const AlertsPage = lazy(() => import('@features/alerts/pages/AlertsPage'));
 const CommandsPage = lazy(() => import('@features/commands/pages/CommandsPage'));
 const ReportsPage = lazy(() => import('@features/reports/pages/ReportsPage'));
 const SettingsPage = lazy(() => import('@features/settings/pages/SettingsPage'));
+const MaintenancePage = lazy(() => import('@features/maintenance/pages/MaintenancePage'));
+const DriversPage = lazy(() => import('@features/drivers/pages/DriversPage'));
+const CalendarsPage = lazy(() => import('@features/calendars/pages/CalendarsPage'));
+const AttributesPage = lazy(() => import('@features/attributes/pages/AttributesPage'));
+const OrdersPage = lazy(() => import('@features/orders/pages/OrdersPage'));
+const StatisticsPage = lazy(() => import('@features/statistics/pages/StatisticsPage'));
 
 function AuthRedirect({ children }: { children: ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -113,6 +125,54 @@ export function App() {
                 element={
                   <PermissionRoute predicate={canViewSettings}>
                     <SettingsPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="maintenance"
+                element={
+                  <PermissionRoute predicate={canViewMaintenance}>
+                    <MaintenancePage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="drivers"
+                element={
+                  <PermissionRoute predicate={canViewDrivers}>
+                    <DriversPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="calendars"
+                element={
+                  <PermissionRoute predicate={canViewCalendars}>
+                    <CalendarsPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="attributes"
+                element={
+                  <PermissionRoute predicate={canViewAttributes}>
+                    <AttributesPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="orders"
+                element={
+                  <PermissionRoute predicate={canViewOrders}>
+                    <OrdersPage />
+                  </PermissionRoute>
+                }
+              />
+              <Route
+                path="statistics"
+                element={
+                  <PermissionRoute predicate={canViewStatistics}>
+                    <StatisticsPage />
                   </PermissionRoute>
                 }
               />

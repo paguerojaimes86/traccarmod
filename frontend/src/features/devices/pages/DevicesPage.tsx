@@ -5,6 +5,7 @@ import { useGroups } from '@features/groups/hooks/useGroups';
 import { useDeleteDevice } from '@features/devices/hooks/useDeleteDevice';
 import { DeviceTable } from '@features/devices/components/DeviceTable';
 import { DeviceForm } from '@features/devices/components/DeviceForm';
+import { AttributeLinkModal } from '@features/devices/components/AttributeLinkModal';
 import { IconPlus } from '@shared/ui/icons';
 import type { Device } from '@shared/api/types.models';
 
@@ -51,6 +52,7 @@ export function DevicesPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<Device | null>(null);
+  const [linkingDevice, setLinkingDevice] = useState<Device | null>(null);
 
   const deleteError = deleteDevice.error ? (deleteDevice.error as Error).message : null;
 
@@ -105,6 +107,7 @@ export function DevicesPage() {
         canManage={canManageDevices}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onLink={(d) => setLinkingDevice(d)}
       />
 
       <DeviceForm
@@ -112,6 +115,15 @@ export function DevicesPage() {
         device={editingDevice}
         onClose={() => setFormOpen(false)}
       />
+
+      {linkingDevice && (
+        <AttributeLinkModal
+          open={!!linkingDevice}
+          deviceId={linkingDevice.id!}
+          deviceName={linkingDevice.name ?? `ID ${linkingDevice.id}`}
+          onClose={() => setLinkingDevice(null)}
+        />
+      )}
     </div>
   );
 }

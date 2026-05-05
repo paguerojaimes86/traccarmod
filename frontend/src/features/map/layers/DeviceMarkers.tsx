@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useMapInstance } from '../context';
+import { useMapInstance, useMapStyleVersion } from '../context';
 import { useDevices } from '@features/devices/hooks/useDevices';
 import { usePositions } from '@features/positions/hooks/usePositions';
 import { useMapStore } from '../store';
@@ -98,8 +98,26 @@ export function DeviceMarkers() {
   const setSelectedDevice = useMapStore((s) => s.setSelectedDevice);
   const flyToDevice = useMapStore((s) => s.flyToDevice);
   const initializedRef = useRef(false);
+  const styleVersion = useMapStyleVersion();
 
   const positionMap = new Map(positions.map((p) => [p.deviceId, p]));
+
+  // ─── Reset cuando cambia el estilo del mapa ───
+  useEffect(() => {
+    if (initializedRef.current) {
+      initializedRef.current = false;
+      // Forzar re-inicialización limpiando capas viejas
+      if (map.getStyle()) {
+        [SELECTED_LAYER_ID, ALL_LAYER_ID].forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
+        [SELECTED_SOURCE_ID, ALL_SOURCE_ID].forEach(s => { if (map.getSource(s)) map.removeSource(s); });
+        Object.keys(STATUS_COLORS).forEach((status) => {
+          [`smart-icon-${status}`, `smart-icon-selected-${status}`].forEach((id) => {
+            if (map.hasImage(id)) map.removeImage(id);
+          });
+        });
+      }
+    }
+  }, [styleVersion, map]);
 
   // ─── Inicialización: registrar íconos + crear sources/layers ───
   useEffect(() => {
@@ -154,7 +172,7 @@ export function DeviceMarkers() {
             'step', 
             ['zoom'], 
             '', 
-            13.5, 
+            10, 
             ['get', 'label']
           ],
           'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
@@ -233,7 +251,7 @@ export function DeviceMarkers() {
       }
       initializedRef.current = false;
     };
-  }, [map]);
+  }, [map, styleVersion]);
 
   // ─── Actualización de datos ───
   useEffect(() => {

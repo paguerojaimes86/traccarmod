@@ -1,10 +1,19 @@
 import { createContext, useContext } from 'react';
 import type { Map } from 'maplibre-gl';
 
-export const MapContext = createContext<Map | null>(null);
+interface MapContextValue {
+  map: Map | null;
+  styleVersion: number;
+}
+
+export const MapContext = createContext<MapContextValue>({ map: null, styleVersion: 0 });
 
 export function useMapInstance(): Map {
-  const map = useContext(MapContext);
-  if (!map) throw new Error('useMapInstance must be used within MapProvider');
-  return map;
+  const ctx = useContext(MapContext);
+  if (!ctx.map) throw new Error('useMapInstance must be used within MapProvider');
+  return ctx.map;
+}
+
+export function useMapStyleVersion(): number {
+  return useContext(MapContext).styleVersion;
 }

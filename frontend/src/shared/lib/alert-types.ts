@@ -186,8 +186,8 @@ export const ALERT_TYPE_CONFIG: Record<string, TypeConfig> = {
   },
 
   // Fuel (2)
-  fuelDrop: {
-    type: 'fuelDrop',
+  deviceFuelDrop: {
+    type: 'deviceFuelDrop',
     label: 'Caída de Combustible',
     description: 'Caída brusca del nivel de combustible',
     icon: '⛽',
@@ -196,8 +196,8 @@ export const ALERT_TYPE_CONFIG: Record<string, TypeConfig> = {
     category: 'other',
     configRequirements: {},
   },
-  fuelIncrease: {
-    type: 'fuelIncrease',
+  deviceFuelIncrease: {
+    type: 'deviceFuelIncrease',
     label: 'Aumento de Combustible',
     description: 'Aumento brusco del nivel de combustible',
     icon: '⛽',
@@ -213,6 +213,18 @@ export const ALERT_TYPE_CONFIG: Record<string, TypeConfig> = {
     label: 'Media',
     description: 'El dispositivo subió archivos multimedia',
     icon: '📷',
+    color: '#6366f1',
+    severity: 'info',
+    category: 'other',
+    configRequirements: {},
+  },
+
+  // Queued command (1)
+  queuedCommandSent: {
+    type: 'queuedCommandSent',
+    label: 'Comando Encolado',
+    description: 'Se envió un comando a la cola del dispositivo',
+    icon: '📨',
     color: '#6366f1',
     severity: 'info',
     category: 'other',

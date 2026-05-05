@@ -84,3 +84,16 @@ export const canSendCommands = (p: Permissions) => p.canSendCommands;
 export const canViewReports = (_p: Permissions) => true;
 
 export const canViewSettings = (p: Permissions) => p.isAdmin;
+
+// CRUD components
+export const canViewMaintenance = (_p: Permissions) => true;
+export const canManageMaintenance = (p: Permissions) => p.canManage;
+export const canViewDrivers = (_p: Permissions) => true;
+export const canManageDrivers = (p: Permissions) => p.canManage;
+export const canViewCalendars = (_p: Permissions) => true;
+export const canManageCalendars = (p: Permissions) => p.canManage;
+export const canViewAttributes = (_p: Permissions) => true;
+export const canManageAttributes = (p: Permissions) => p.canManage;
+export const canViewOrders = (_p: Permissions) => true;
+export const canManageOrders = (p: Permissions) => p.canManage;
+export const canViewStatistics = (p: Permissions) => p.isAdmin;

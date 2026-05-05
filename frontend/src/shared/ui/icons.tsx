@@ -48,6 +48,9 @@ import {
   Zap,
   Droplets,
   LogOut,
+  Upload,
+  Link,
+  Crosshair,
 } from 'lucide-react';
 
 export interface IconProps {
@@ -253,4 +256,16 @@ export function IconFileBarChart({ size = defaultProps.size, style, className, c
 
 export function IconLogout({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
   return <LogOut size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconUpload({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Upload size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconLink({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Link size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
+}
+
+export function IconCrosshair({ size = defaultProps.size, style, className, color, strokeWidth = defaultProps.strokeWidth }: IconProps) {
+  return <Crosshair size={size} style={style} className={className} color={color} strokeWidth={strokeWidth} />;
 }
