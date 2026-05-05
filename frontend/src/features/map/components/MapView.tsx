@@ -4,10 +4,9 @@ import { Map, LngLatBounds } from 'maplibre-gl';
 import type { ReactNode } from 'react';
 import { useMapStore } from '@features/map/store';
 import { usePositions } from '@features/positions/hooks/usePositions';
-import { useDevices } from '@features/devices/hooks/useDevices';
 import { useServer } from '@features/settings/hooks/useServer';
 import { resolveMapStyle } from '@shared/lib/map-styles';
-import { IconCrosshair, IconLink } from '@shared/ui/icons';
+import { IconCrosshair } from '@shared/ui/icons';
 import { MapContext } from '../context';
 
 export function MapView({ children }: { children?: ReactNode }) {
@@ -16,13 +15,10 @@ export function MapView({ children }: { children?: ReactNode }) {
   const fromMapRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const [styleVersion, setStyleVersion] = useState(0);
-  const [toast, setToast] = useState('');
 
   const center = useMapStore((s) => s.center);
   const zoom = useMapStore((s) => s.zoom);
-  const selectedDeviceId = useMapStore((s) => s.selectedDeviceId);
   const { data: server } = useServer();
-  const { data: devices = [] } = useDevices();
 
   // Inicializar el mapa una sola vez cuando el container esté listo
   useEffect(() => {
@@ -95,6 +91,7 @@ export function MapView({ children }: { children?: ReactNode }) {
 
   const ctxValue = useMemo(() => ({ map: mapRef.current, styleVersion }), [mapRef.current, styleVersion]);
 
+  const selectedDeviceId = useMapStore((s) => s.selectedDeviceId);
   const followMode = useMapStore((s) => s.followMode);
   const setFollowMode = useMapStore((s) => s.setFollowMode);
   const { data: positions = [] } = usePositions();
@@ -230,75 +227,6 @@ export function MapView({ children }: { children?: ReactNode }) {
         >
           <IconCrosshair size={16} />
         </button>
-      )}
-
-      {/* Botón Compartir */}
-      <button
-        onClick={async () => {
-          const ids: number[] = [];
-          if (selectedDeviceId) {
-            ids.push(selectedDeviceId);
-          } else {
-            for (const d of devices) {
-              if (d.id != null) ids.push(d.id);
-            }
-          }
-          if (ids.length === 0) return;
-          try {
-            const resp = await fetch('/api/public/generate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ deviceIds: ids }),
-            });
-            const data = await resp.json();
-            if (data.url) {
-              await navigator.clipboard.writeText(data.url);
-              setToast('Link público copiado');
-              setTimeout(() => setToast(''), 2500);
-            }
-          } catch {
-            // fallback: copiar link interno con login
-            const url = `${window.location.origin}/?vehiculos=${ids.join(',')}`;
-            await navigator.clipboard.writeText(url);
-            setToast('Link copiado (requiere login)');
-            setTimeout(() => setToast(''), 2500);
-            return;
-          }
-        }}
-        title="Compartir ubicación"
-        style={{
-          position: 'absolute',
-          top: 92,
-          right: 12,
-          zIndex: 10,
-          width: 36,
-          height: 36,
-          border: '1px solid rgba(15, 23, 42, 0.08)',
-          borderRadius: '0.625rem',
-          backgroundColor: 'rgba(255, 255, 255, 0.92)',
-          backdropFilter: 'blur(8px)',
-          color: '#64748b',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(15, 23, 42, 0.1)',
-          transition: 'all 0.15s',
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 23, 42, 0.15)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.92)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 23, 42, 0.1)'; }}
-      >
-        <IconLink size={16} />
-      </button>
-
-      {toast && (
-        <div style={{
-          position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)', zIndex: 20,
-          padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
-          backgroundColor: 'rgba(16, 185, 129, 0.95)', color: '#fff',
-          fontFamily: 'Outfit, sans-serif', boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-          pointerEvents: 'none', whiteSpace: 'nowrap',
-        }}>{toast}</div>
       )}
 
       {mapReady && mapRef.current && (

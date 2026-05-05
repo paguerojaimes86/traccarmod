@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { DeviceList } from '@features/devices/components/DeviceList';
 import { MapView } from '@features/map/components/MapView';
 import { DeviceMarkers } from '@features/map/layers/DeviceMarkers';
@@ -10,7 +10,6 @@ import { HistoryPanel } from '@features/positions/components/HistoryPanel';
 import { useWebSocket } from '@features/positions/hooks/useWebSocket';
 import { useEvents } from '@features/events/hooks/useEvents';
 import { useMapStore } from '@features/map/store';
-import { useDevices } from '@features/devices/hooks/useDevices';
 import { DeviceInfoPanel } from '@features/map/components/DeviceInfoPanel';
 import { MileageReport } from '@features/reports/components/MileageReport';
 import { AlertsPanel } from '@features/alerts/components/AlertsPanel';
@@ -32,35 +31,6 @@ export function DashboardPage() {
   const [historyPositions, setHistoryPositions] = useState<HistoryPosition[]>([]);
   const [showWizard, setShowWizard] = useState(false);
   const [alertTab, setAlertTab] = useState<'active' | 'configured'>('active');
-
-  // ─── Compartir: leer ?vehiculos= de la URL ───
-  const setSelectedDevice = useMapStore((s) => s.setSelectedDevice);
-  const { data: devices = [] } = useDevices();
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const rawIds = params.get('vehiculos');
-    if (!rawIds) return;
-
-    const sharedIds = rawIds.split(',').map(Number).filter((id) => !isNaN(id) && id > 0);
-    if (sharedIds.length === 0) return;
-
-    // Esperar a que los dispositivos carguen
-    if (devices.length === 0) return;
-
-    const shared = devices.filter((d) => d.id != null && sharedIds.includes(d.id));
-    if (shared.length === 0) return;
-
-    // Seleccionar el primero y enfocar todos
-    setSelectedDevice(shared[0].id!);
-
-    // fitBounds via el store (el map lo lee en el efecto de cámara)
-    // También podemos actualizar el store directamente
-    const flyToDevice = useMapStore.getState().flyToDevice;
-    if (shared[0].id) {
-      flyToDevice(shared[0].id, [0, 0]); // La cámara se ajusta con las posiciones reales
-    }
-  }, [devices, setSelectedDevice]);
 
   const handlePositionsLoaded = useCallback(
     (positions: HistoryPosition[]) => {
