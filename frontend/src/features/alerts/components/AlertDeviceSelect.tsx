@@ -116,7 +116,7 @@ const deviceNameStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
-const statusDotStyle = (status: string): CSSProperties => ({
+const statusDotStyle = (status: string | undefined): CSSProperties => ({
   width: '6px',
   height: '6px',
   borderRadius: '50%',
@@ -124,7 +124,7 @@ const statusDotStyle = (status: string): CSSProperties => ({
   flexShrink: 0,
 });
 
-const statusLabelStyle = (status: string): CSSProperties => ({
+const statusLabelStyle = (status: string | undefined): CSSProperties => ({
   fontSize: '0.6875rem',
   color: status === 'online' ? '#10b981' : '#94a3b8',
   fontFamily: "'Inter', system-ui, sans-serif",

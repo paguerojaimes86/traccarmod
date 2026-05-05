@@ -41,7 +41,7 @@ const categoryHeaderStyle: CSSProperties = {
 };
 
 // ─── Type Card ────────────────────────────────────────────────────
-const typeCardStyle = (color: string): CSSProperties => ({
+const typeCardStyle = (_color: string): CSSProperties => ({
   display: 'flex',
   flexDirection: 'column' as const,
   alignItems: 'center',
