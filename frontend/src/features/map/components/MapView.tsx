@@ -4,9 +4,10 @@ import { Map, LngLatBounds } from 'maplibre-gl';
 import type { ReactNode } from 'react';
 import { useMapStore } from '@features/map/store';
 import { usePositions } from '@features/positions/hooks/usePositions';
+import { useDevices } from '@features/devices/hooks/useDevices';
 import { useServer } from '@features/settings/hooks/useServer';
 import { resolveMapStyle } from '@shared/lib/map-styles';
-import { IconCrosshair } from '@shared/ui/icons';
+import { IconCrosshair, IconLink } from '@shared/ui/icons';
 import { MapContext } from '../context';
 
 export function MapView({ children }: { children?: ReactNode }) {
@@ -18,7 +19,9 @@ export function MapView({ children }: { children?: ReactNode }) {
 
   const center = useMapStore((s) => s.center);
   const zoom = useMapStore((s) => s.zoom);
+  const selectedDeviceId = useMapStore((s) => s.selectedDeviceId);
   const { data: server } = useServer();
+  const { data: devices = [] } = useDevices();
 
   // Inicializar el mapa una sola vez cuando el container esté listo
   useEffect(() => {
@@ -91,7 +94,6 @@ export function MapView({ children }: { children?: ReactNode }) {
 
   const ctxValue = useMemo(() => ({ map: mapRef.current, styleVersion }), [mapRef.current, styleVersion]);
 
-  const selectedDeviceId = useMapStore((s) => s.selectedDeviceId);
   const followMode = useMapStore((s) => s.followMode);
   const setFollowMode = useMapStore((s) => s.setFollowMode);
   const { data: positions = [] } = usePositions();
@@ -228,6 +230,57 @@ export function MapView({ children }: { children?: ReactNode }) {
           <IconCrosshair size={16} />
         </button>
       )}
+
+      {/* Botón Compartir */}
+      <button
+        onClick={() => {
+          const ids: number[] = [];
+          if (selectedDeviceId) {
+            ids.push(selectedDeviceId);
+          } else {
+            for (const d of devices) {
+              if (d.id != null) ids.push(d.id);
+            }
+          }
+          if (ids.length === 0) return;
+          const url = `${window.location.origin}/?vehiculos=${ids.join(',')}`;
+          navigator.clipboard.writeText(url).then(() => {
+            const el = document.getElementById('share-feedback');
+            if (el) { el.style.opacity = '1'; setTimeout(() => { el.style.opacity = '0'; }, 2000); }
+          });
+        }}
+        title="Compartir ubicación"
+        style={{
+          position: 'absolute',
+          top: 92,
+          right: 12,
+          zIndex: 10,
+          width: 36,
+          height: 36,
+          border: '1px solid rgba(15, 23, 42, 0.08)',
+          borderRadius: '0.625rem',
+          backgroundColor: 'rgba(255, 255, 255, 0.92)',
+          backdropFilter: 'blur(8px)',
+          color: '#64748b',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 8px rgba(15, 23, 42, 0.1)',
+          transition: 'all 0.15s',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 23, 42, 0.15)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.92)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 23, 42, 0.1)'; }}
+      >
+        <IconLink size={16} />
+      </button>
+      <div id="share-feedback" style={{
+        position: 'absolute', top: 96, right: 54, zIndex: 10,
+        padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+        backgroundColor: 'rgba(16, 185, 129, 0.9)', color: '#fff',
+        fontFamily: 'Outfit, sans-serif', opacity: 0, transition: 'opacity 0.3s',
+        pointerEvents: 'none', whiteSpace: 'nowrap',
+      }}>Link copiado</div>
 
       {mapReady && mapRef.current && (
         <MapContext.Provider value={ctxValue}>
