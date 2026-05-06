@@ -43,6 +43,9 @@ export const useAlertStore = create<AlertState & AlertActions>()((set) => ({
 
   addEvent: (event) =>
     set((s) => {
+      if (s.dismissedEventIds.includes(event.id)) {
+        return s;
+      }
       if (s.recentEvents.some((e) => e.id === event.id)) {
         alertsDebug('store', 'event deduplicated', { id: event.id, type: event.type });
         return s;
@@ -55,10 +58,11 @@ export const useAlertStore = create<AlertState & AlertActions>()((set) => ({
 
   addEvents: (events) =>
     set((s) => {
+      const dismissed = new Set(s.dismissedEventIds);
       const existingIds = new Set(s.recentEvents.map((e) => e.id));
-      const newEvents = events.filter((e) => !existingIds.has(e.id));
+      const newEvents = events.filter((e) => !dismissed.has(e.id) && !existingIds.has(e.id));
       if (newEvents.length === 0) {
-        alertsDebug('store', 'batch ignored: all events duplicated', {
+        alertsDebug('store', 'batch ignored: all events duplicated or dismissed', {
           incoming: events.length,
           totalStored: s.recentEvents.length,
         });
@@ -74,12 +78,28 @@ export const useAlertStore = create<AlertState & AlertActions>()((set) => ({
       };
     }),
 
-  clearEvents: () => set({ recentEvents: [] }),
+  clearEvents: () =>
+    set((s) => {
+      // Mark all current events as dismissed so polling doesn't re-add them
+      const allIds = s.recentEvents.map((e) => e.id).filter((id) => !s.dismissedEventIds.includes(id));
+      if (allIds.length === 0) return { recentEvents: [] };
+      const newDismissed = [...s.dismissedEventIds, ...allIds];
+      saveDismissed(newDismissed);
+      return { recentEvents: [], dismissedEventIds: newDismissed };
+    }),
 
   removeEvent: (id) =>
-    set((s) => ({
-      recentEvents: s.recentEvents.filter((e) => e.id !== id),
-    })),
+    set((s) => {
+      if (s.dismissedEventIds.includes(id)) {
+        return { recentEvents: s.recentEvents.filter((e) => e.id !== id) };
+      }
+      const newDismissed = [...s.dismissedEventIds, id];
+      saveDismissed(newDismissed);
+      return {
+        recentEvents: s.recentEvents.filter((e) => e.id !== id),
+        dismissedEventIds: newDismissed,
+      };
+    }),
 
   dismissEvent: (id) =>
     set((s) => {
