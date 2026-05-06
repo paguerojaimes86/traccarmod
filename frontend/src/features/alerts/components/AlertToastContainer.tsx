@@ -16,6 +16,7 @@ const containerStyle: CSSProperties = {
 export function AlertToastContainer() {
   const recentEvents = useAlertStore((s) => s.recentEvents);
   const [visibleIds, setVisibleIds] = useState<Set<number>>(new Set());
+  const [exitingIds, setExitingIds] = useState<Set<number>>(new Set());
 
   // Show only the last 5 events as toasts. When new events arrive that we
   // haven't shown yet, add them to the visible set.
@@ -36,11 +37,19 @@ export function AlertToastContainer() {
   }, [latestEvents]);
 
   const dismissToast = (id: number) => {
-    setVisibleIds((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
+    setExitingIds((prev) => new Set(prev).add(id));
+    setTimeout(() => {
+      setVisibleIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      setExitingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 300); // match animation duration
   };
 
   // Determine which events should currently be shown as toasts
@@ -61,15 +70,36 @@ export function AlertToastContainer() {
             opacity: 1;
           }
         }
+        @keyframes fadeOutRight {
+          from {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(50%);
+            opacity: 0;
+          }
+        }
       `}</style>
-      {visibleEvents.map((event) => (
-        <div key={event.id} style={{ pointerEvents: 'auto' }}>
-          <AlertToast
-            event={event}
-            onDismiss={() => dismissToast(event.id)}
-          />
-        </div>
-      ))}
+      {visibleEvents.map((event) => {
+        const isExiting = exitingIds.has(event.id);
+        return (
+          <div
+            key={event.id}
+            style={{
+              pointerEvents: 'auto',
+              animation: isExiting
+                ? 'fadeOutRight 0.3s cubic-bezier(0.4, 0, 1, 1) forwards'
+                : 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          >
+            <AlertToast
+              event={event}
+              onDismiss={() => dismissToast(event.id)}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
