@@ -6,6 +6,8 @@ import { AlertChannels } from './AlertChannels';
 import { useCreateNotification } from '@features/notifications/hooks/useNotifications';
 import { useLinkNotification } from '@features/notifications/hooks/useLinkNotification';
 import { useGeofences } from '@features/geofences/hooks/useGeofences';
+import { useDevices } from '@features/devices/hooks/useDevices';
+import { useUpdateDevice } from '@features/devices/hooks/useUpdateDevice';
 import type { AlertWizardConfig } from '@shared/lib/alert-types';
 import { hasConfigRequirements, getAlertConfig, validateAlertConfig, NOTIFICATOR_LABELS } from '@shared/lib/alert-types';
 import { alertsDebug, alertsWarn } from '@shared/lib/debug';
@@ -228,8 +230,10 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const { data: geofences = [] } = useGeofences();
+  const { data: allDevices = [] } = useDevices();
   const createNotification = useCreateNotification();
   const linkNotification = useLinkNotification();
+  const updateDevice = useUpdateDevice();
 
   const needsConfig = useMemo(() => hasConfigRequirements(config.type), [config.type]);
   const stepKeys: StepKey[] = needsConfig
@@ -325,6 +329,27 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
           notificationId: result.id,
           devices: config.deviceIds.length,
         });
+
+        // Traccar reads speedLimit from DEVICE attributes (not notification)
+        // See OverspeedEventHandler.java — KeyType: SERVER, DEVICE
+        if (config.type === 'deviceOverspeed' && config.speedLimit) {
+          alertsDebug('wizard', 'setting speedLimit on device attributes', {
+            devices: config.deviceIds.length,
+            speedLimit: config.speedLimit,
+          });
+          await Promise.allSettled(
+            config.deviceIds.map(async (deviceId) => {
+              const device = allDevices.find((d) => d.id === deviceId);
+              if (!device) return;
+              await updateDevice.mutateAsync({
+                id: deviceId,
+                ...device,
+                attributes: { ...device.attributes, speedLimit: config.speedLimit! },
+              });
+            })
+          );
+          alertsDebug('wizard', 'speedLimit set on all devices');
+        }
       }
 
       setShowSuccess(true);
@@ -339,7 +364,7 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
       alertsWarn('wizard', 'alert creation failed', err);
       setError(err?.message ?? 'Error al crear la alerta. Intenta de nuevo.');
     }
-  }, [config, createNotification, linkNotification, onClose, onSuccess]);
+  }, [config, createNotification, linkNotification, updateDevice, allDevices, onClose, onSuccess]);
 
   const isLoading = createNotification.isPending || linkNotification.isPending;
 

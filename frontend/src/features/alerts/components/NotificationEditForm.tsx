@@ -4,6 +4,7 @@ import { useLinkNotification } from '@features/notifications/hooks/useLinkNotifi
 import { useUnlinkNotification } from '@features/notifications/hooks/useUnlinkNotification';
 import { useLinkedDeviceIds, useInvalidateLinkedDevices } from '@features/notifications/hooks/useLinkedDeviceIds';
 import { useDevices } from '@features/devices/hooks/useDevices';
+import { useUpdateDevice } from '@features/devices/hooks/useUpdateDevice';
 import { useGeofences } from '@features/geofences/hooks/useGeofences';
 import { useUnitConversion } from '@shared/hooks/useUnitConversion';
 import { getAlertConfig, ALERT_TYPE_CONFIG, ALARM_SUBTYPES, NOTIFICATOR_OPTIONS } from '@shared/lib/alert-types';
@@ -248,6 +249,7 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
   const updateNotification = useUpdateNotification();
   const linkNotification = useLinkNotification();
   const unlinkNotification = useUnlinkNotification();
+  const updateDevice = useUpdateDevice();
   const invalidateLinked = useInvalidateLinkedDevices();
   const { data: linkedDeviceIds = [], isLoading: isLoadingLinked } = useLinkedDeviceIds(notification?.id);
   const { data: allDevices = [] } = useDevices();
@@ -378,6 +380,21 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
           geofenceId: Number(geofenceId),
         }).catch(() => {});
       }
+    }
+
+    // Traccar reads speedLimit from DEVICE attributes (not notification)
+    if (notification.type === 'deviceOverspeed' && speedLimit && linkedDeviceIds.length > 0) {
+      Promise.allSettled(
+        linkedDeviceIds.map(async (deviceId) => {
+          const device = allDevices.find((d) => d.id === deviceId);
+          if (!device) return;
+          await updateDevice.mutateAsync({
+            id: deviceId,
+            ...device,
+            attributes: { ...device.attributes, speedLimit: Number(speedLimit) },
+          });
+        })
+      ).catch(() => {});
     }
   };
 
