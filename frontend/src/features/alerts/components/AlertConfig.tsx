@@ -118,7 +118,7 @@ export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
 
   return (
     <div>
-      {requirements.needsGeofence && (
+      {(requirements.needsGeofence || type === 'deviceOverspeed') && (
         <div style={fieldGroupStyle}>
           <label style={labelStyle}>Geozona</label>
           <select
@@ -136,13 +136,16 @@ export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            <option value="">Seleccionar geozona...</option>
+            <option value="">(Sin geozona — aplica en cualquier lado)</option>
             {geofences.map((g) => (
               <option key={g.id} value={g.id}>{g.name}</option>
             ))}
           </select>
           <p style={helperTextStyle}>
-            Se notificará cuando un dispositivo {type === 'geofenceEnter' ? 'entre' : 'salga'} de la geozona seleccionada
+            {type === 'deviceOverspeed'
+              ? 'Opcional: seleccioná una geozona para restringir la alerta. Si no elegís ninguna, aplica en cualquier ubicación.'
+              : `Se notificará cuando un dispositivo ${type === 'geofenceEnter' ? 'entre' : 'salga'} de la geozona seleccionada`
+            }
           </p>
         </div>
       )}

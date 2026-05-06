@@ -5,6 +5,7 @@ import { AlertDeviceSelect } from './AlertDeviceSelect';
 import { AlertChannels } from './AlertChannels';
 import { useCreateNotification } from '@features/notifications/hooks/useNotifications';
 import { useLinkNotification } from '@features/notifications/hooks/useLinkNotification';
+import { useGeofences } from '@features/geofences/hooks/useGeofences';
 import type { AlertWizardConfig } from '@shared/lib/alert-types';
 import { hasConfigRequirements, getAlertConfig, validateAlertConfig, NOTIFICATOR_LABELS } from '@shared/lib/alert-types';
 import { alertsDebug, alertsWarn } from '@shared/lib/debug';
@@ -226,6 +227,7 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const { data: geofences = [] } = useGeofences();
   const createNotification = useCreateNotification();
   const linkNotification = useLinkNotification();
 
@@ -299,6 +301,7 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
       const attributes: Record<string, unknown> = {};
       if (config.speedLimit) attributes.speedLimit = config.speedLimit;
       if (config.alarmSubtype) attributes.alarmType = config.alarmSubtype;
+      if (config.geofenceId) attributes.geofenceId = config.geofenceId;
 
       const result = await createNotification.mutateAsync({
         type: config.type,
@@ -349,7 +352,10 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
   // Build confirmation summary items
   const summaryItems: { label: string; value: string }[] = [];
   summaryItems.push({ label: 'Tipo', value: typeConfig.label || config.type });
-  if (config.geofenceId) summaryItems.push({ label: 'Geozona ID', value: String(config.geofenceId) });
+  if (config.geofenceId) {
+    const geoName = geofences.find((g) => g.id === config.geofenceId)?.name ?? `ID ${config.geofenceId}`;
+    summaryItems.push({ label: 'Geozona', value: geoName });
+  }
   if (config.speedLimit) summaryItems.push({ label: 'Límite velocidad', value: `${config.speedLimit} kn` });
   if (config.alarmSubtype) summaryItems.push({ label: 'Alarma', value: config.alarmSubtype });
   summaryItems.push({ label: 'Dispositivos', value: `${config.deviceIds.length} seleccionado(s)` });

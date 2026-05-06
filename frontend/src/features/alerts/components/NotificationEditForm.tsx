@@ -4,6 +4,8 @@ import { useLinkNotification } from '@features/notifications/hooks/useLinkNotifi
 import { useUnlinkNotification } from '@features/notifications/hooks/useUnlinkNotification';
 import { useLinkedDeviceIds, useInvalidateLinkedDevices } from '@features/notifications/hooks/useLinkedDeviceIds';
 import { useDevices } from '@features/devices/hooks/useDevices';
+import { useGeofences } from '@features/geofences/hooks/useGeofences';
+import { useUnitConversion } from '@shared/hooks/useUnitConversion';
 import { getAlertConfig, ALERT_TYPE_CONFIG, ALARM_SUBTYPES, NOTIFICATOR_OPTIONS } from '@shared/lib/alert-types';
 import { IconClose } from '@shared/ui/icons';
 import type { Notification } from '@shared/api/types.models';
@@ -240,6 +242,9 @@ const deviceListItem: CSSProperties = {
 };
 
 export function NotificationEditForm({ open, notification, onClose, onSuccess }: NotificationEditFormProps) {
+  const { data: geofences = [] } = useGeofences();
+  const { speedUnit } = useUnitConversion();
+  const speedLabel = speedUnit === 'kmh' ? 'km/h' : speedUnit === 'mph' ? 'mph' : 'kn';
   const updateNotification = useUpdateNotification();
   const linkNotification = useLinkNotification();
   const unlinkNotification = useUnlinkNotification();
@@ -252,6 +257,8 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
   const [description, setDescription] = useState('');
   const [speedLimit, setSpeedLimit] = useState<string>('');
   const [alarmSubtype, setAlarmSubtype] = useState<string>('');
+  const [geofenceId, setGeofenceId] = useState<string>('');
+  const [initialGeofenceId, setInitialGeofenceId] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [deviceSearch, setDeviceSearch] = useState('');
   const [showDeviceList, setShowDeviceList] = useState(false);
@@ -266,6 +273,9 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
       const attrs = (notification.attributes ?? {}) as Record<string, unknown>;
       setSpeedLimit(attrs.speedLimit != null ? String(attrs.speedLimit) : '');
       setAlarmSubtype((attrs.alarmType as string) ?? '');
+      const currentGeofenceId = attrs.geofenceId != null ? String(attrs.geofenceId) : '';
+      setGeofenceId(currentGeofenceId);
+      setInitialGeofenceId(currentGeofenceId);
       setShowDeviceList(false);
       setDeviceSearch('');
     }
@@ -333,6 +343,9 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
     if (typeConfig?.configRequirements?.needsAlarmSubtype && alarmSubtype) {
       attributes.alarmType = alarmSubtype;
     }
+    if ((typeConfig?.configRequirements?.needsGeofence || notification.type === 'deviceOverspeed') && geofenceId) {
+      attributes.geofenceId = Number(geofenceId);
+    }
 
     try {
       await updateNotification.mutateAsync({
@@ -348,6 +361,23 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error al guardar. Intenta de nuevo.';
       setError(message);
+    }
+
+    // Sync geofence link via permissions (fire & forget — no bloquea el guardado)
+    if ((typeConfig?.configRequirements?.needsGeofence || notification.type === 'deviceOverspeed') && notification.id) {
+      if (initialGeofenceId && initialGeofenceId !== geofenceId) {
+        unlinkNotification.mutateAsync({
+          notificationId: notification.id,
+          geofenceId: Number(initialGeofenceId),
+        }).catch(() => {});
+      }
+      if (geofenceId) {
+        linkNotification.mutateAsync({
+          notificationId: notification.id,
+          deviceIds: [],
+          geofenceId: Number(geofenceId),
+        }).catch(() => {});
+      }
     }
   };
 
@@ -517,13 +547,21 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
         {/* Dynamic attributes based on type */}
         {typeConfig?.configRequirements?.needsSpeedLimit && (
           <div style={sectionStyle}>
-            <span style={labelStyle}>Límite de Velocidad (nudos)</span>
+            <span style={labelStyle}>Límite de Velocidad ({speedLabel})</span>
             <input
               type="number"
               style={inputStyle}
               placeholder="Ej: 80"
-              value={speedLimit}
-              onChange={(e) => setSpeedLimit(e.target.value)}
+              value={speedLimit ? Math.round(Number(speedLimit) * (speedUnit === 'kmh' ? 1.852 : 1.15078)) : ''}
+              onChange={(e) => {
+                const displayValue = Number(e.target.value);
+                if (!displayValue || displayValue <= 0) {
+                  setSpeedLimit('');
+                  return;
+                }
+                const knotsValue = displayValue / (speedUnit === 'kmh' ? 1.852 : 1.15078);
+                setSpeedLimit(String(Math.round(knotsValue * 10) / 10));
+              }}
               min={1}
               max={500}
             />
@@ -541,6 +579,22 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
               <option value="">Seleccionar subtipo...</option>
               {ALARM_SUBTYPES.map((s) => (
                 <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {(typeConfig?.configRequirements?.needsGeofence || notification.type === 'deviceOverspeed') && (
+          <div style={sectionStyle}>
+            <span style={labelStyle}>Geozona</span>
+            <select
+              style={selectStyle}
+              value={geofenceId}
+              onChange={(e) => setGeofenceId(e.target.value || '')}
+            >
+              <option value="">(Sin geozona — aplica en cualquier lado)</option>
+              {geofences.map((g) => (
+                <option key={g.id} value={g.id}>{g.name}</option>
               ))}
             </select>
           </div>
