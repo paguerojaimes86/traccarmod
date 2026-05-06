@@ -221,13 +221,16 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
     return (
       <button
         style={{
-          position: 'relative',
-          margin: '1rem 1rem 1rem 0',
+          position: 'absolute',
+          top: '1rem',
+          right: '1rem',
+          zIndex: 20,
           width: 'auto',
           padding: '0.5rem 0.875rem',
           borderRadius: '0.875rem',
-          border: '1px solid rgba(15, 23, 42, 0.06)',
-          backgroundColor: 'transparent',
+          border: '1px solid rgba(15, 23, 42, 0.08)',
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(12px)',
           color: '#0f172a',
           cursor: 'pointer',
           display: 'flex',
@@ -236,12 +239,11 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
           fontSize: '0.8125rem',
           fontWeight: 600,
           fontFamily: 'Outfit, sans-serif',
-          transition: 'border-color 0.2s, box-shadow 0.2s',
-          alignSelf: 'flex-start',
+          transition: 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s',
         }}
         onClick={() => setCollapsed(false)}
-        onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.2)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 23, 42, 0.08)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.06)'; e.currentTarget.style.boxShadow = 'none'; }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.2)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 23, 42, 0.08)'; e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.08)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.85)'; }}
       >
         <IconBell size={15} style={{ color: '#ef4444' }} />
         <span>Alertas</span>
