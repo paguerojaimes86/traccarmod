@@ -41,7 +41,7 @@ describe('useUpdateDevice', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(apiClient.PUT).toHaveBeenCalledWith('/devices/{id}', {
       params: { path: { id: 1 } },
-      body: { name: 'Updated Device' },
+      body: { id: 1, name: 'Updated Device' },
     });
     expect(result.current.data).toEqual(mockDevice);
   });

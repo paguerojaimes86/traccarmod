@@ -75,7 +75,7 @@ const filterButtonStyle = (isActive: boolean, color: string): CSSProperties => (
   alignItems: 'center',
   justifyContent: 'center',
   gap: '0.3rem',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s',
   boxShadow: isActive ? `0 0 16px -6px ${color}` : 'none',
   fontSize: '0.625rem',
   fontWeight: 800,
@@ -100,7 +100,7 @@ const createButtonStyle: CSSProperties = {
   fontWeight: 700,
   fontFamily: 'Outfit, sans-serif',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background-color 0.2s, border-color 0.2s',
 };
 
 const collapseButtonStyle: CSSProperties = {
@@ -113,7 +113,7 @@ const collapseButtonStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'all 0.2s ease',
+  transition: 'background-color 0.2s, color 0.2s',
 };
 
 const tabStyle = (active: boolean): CSSProperties => ({
@@ -127,7 +127,7 @@ const tabStyle = (active: boolean): CSSProperties => ({
   fontSize: '0.75rem',
   cursor: 'pointer',
   borderRadius: '0.625rem',
-  transition: 'all 0.2s ease',
+  transition: 'background-color 0.2s, color 0.2s',
   letterSpacing: '-0.01em',
 });
 
@@ -151,7 +151,7 @@ const notifDeleteBtn: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'all 0.2s ease',
+  transition: 'color 0.2s, background-color 0.2s',
   flexShrink: 0,
 };
 
@@ -226,9 +226,8 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
           width: 'auto',
           padding: '0.5rem 0.875rem',
           borderRadius: '0.875rem',
-          border: '1px solid rgba(15, 23, 42, 0.08)',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(15, 23, 42, 0.06)',
+          backgroundColor: 'transparent',
           color: '#0f172a',
           cursor: 'pointer',
           display: 'flex',
@@ -237,13 +236,12 @@ export function AlertsPanel({ onCreateAlert, initialTab, onTabChange }: AlertsPa
           fontSize: '0.8125rem',
           fontWeight: 600,
           fontFamily: 'Outfit, sans-serif',
-          boxShadow: '0 4px 16px rgba(15, 23, 42, 0.1)',
-          transition: 'all 0.2s ease',
+          transition: 'border-color 0.2s, box-shadow 0.2s',
           alignSelf: 'flex-start',
         }}
         onClick={() => setCollapsed(false)}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(15, 23, 42, 0.15)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(15, 23, 42, 0.1)'; }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.2)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 23, 42, 0.08)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.06)'; e.currentTarget.style.boxShadow = 'none'; }}
       >
         <IconBell size={15} style={{ color: '#ef4444' }} />
         <span>Alertas</span>

@@ -10,7 +10,7 @@ export function useUpdateDevice() {
     mutationFn: async ({ id, ...updates }: Partial<Device> & { id: number }) => {
       const { data, error } = await apiClient.PUT('/devices/{id}', {
         params: { path: { id } },
-        body: updates as Device,
+        body: { id, ...updates } as Device,
       });
       if (error) throw error;
       // Traccar returns id:0 in PUT response; merge with known id

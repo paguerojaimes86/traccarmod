@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, type CSSProperties } from 'react';
-import { useUpdateNotification } from '@features/notifications/hooks/useNotifications';
 import { useLinkNotification } from '@features/notifications/hooks/useLinkNotification';
 import { useUnlinkNotification } from '@features/notifications/hooks/useUnlinkNotification';
 import { useLinkedDeviceIds, useInvalidateLinkedDevices } from '@features/notifications/hooks/useLinkedDeviceIds';
@@ -246,7 +245,6 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
   const { data: geofences = [] } = useGeofences();
   const { speedUnit } = useUnitConversion();
   const speedLabel = speedUnit === 'kmh' ? 'km/h' : speedUnit === 'mph' ? 'mph' : 'kn';
-  const updateNotification = useUpdateNotification();
   const linkNotification = useLinkNotification();
   const unlinkNotification = useUnlinkNotification();
   const updateDevice = useUpdateDevice();
@@ -334,48 +332,10 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
   };
 
   const handleSave = async () => {
-    if (notificators.length === 0) {
-      setError('Selecciona al menos un canal de notificación');
-      return;
-    }
+    // Traccar API does not support PUT for notifications — only device linking works
+    setError('La edición de configuraciones de notificación no está soportada por esta versión de Traccar. Solo se pueden vincular/desvincular dispositivos.');
 
-    setError(null);
-
-    const attributes: Record<string, unknown> = {};
-    if (typeConfig?.configRequirements?.needsSpeedLimit && speedLimit) {
-      attributes.speedLimit = Number(speedLimit);
-    }
-    if (typeConfig?.configRequirements?.needsFuelThreshold && fuelThreshold) {
-      if (notification.type === 'deviceFuelDrop') {
-        attributes.fuelDropThreshold = Number(fuelThreshold);
-      } else if (notification.type === 'deviceFuelIncrease') {
-        attributes.fuelIncreaseThreshold = Number(fuelThreshold);
-      }
-    }
-    if (typeConfig?.configRequirements?.needsAlarmSubtype && alarmSubtype) {
-      attributes.alarmType = alarmSubtype;
-    }
-    if ((typeConfig?.configRequirements?.needsGeofence || notification.type === 'deviceOverspeed') && geofenceId) {
-      attributes.geofenceId = Number(geofenceId);
-    }
-
-    try {
-      await updateNotification.mutateAsync({
-        id: notification.id!,
-        notificators: notificators.join(','),
-        always,
-        description: description || null,
-        attributes: attributes as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
-
-      onSuccess?.();
-      onClose();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Error al guardar. Intenta de nuevo.';
-      setError(message);
-    }
-
-    // Sync geofence link via permissions (fire & forget — no bloquea el guardado)
+    // Sync geofence link via permissions (fire & forget — no bloquea)
     if ((typeConfig?.configRequirements?.needsGeofence || notification.type === 'deviceOverspeed') && notification.id) {
       if (initialGeofenceId && initialGeofenceId !== geofenceId) {
         unlinkNotification.mutateAsync({
@@ -420,7 +380,6 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
     }
   };
 
-  const isSaving = updateNotification.isPending;
   const isLinkingDevice = linkNotification.isPending || unlinkNotification.isPending;
 
   return (
@@ -672,13 +631,12 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
             Cancelar
           </button>
           <button
-            style={saveButton}
+            style={{ ...saveButton, opacity: 0.5, cursor: 'not-allowed' }}
             onClick={handleSave}
-            disabled={isSaving}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#5558e0'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
+            disabled
+            title="La edición de notificaciones no está soportada por esta versión de Traccar"
           >
-            {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+            Guardar Cambios (no soportado)
           </button>
         </div>
       </div>

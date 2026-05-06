@@ -7,7 +7,7 @@ export function useUpdateDriver() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...u }: Partial<Driver> & { id: number }) => {
-      const { data, error } = await apiClient.PUT('/drivers/{id}', { params: { path: { id } }, body: u as Driver });
+      const { data, error } = await apiClient.PUT('/drivers/{id}', { params: { path: { id } }, body: { id, ...u } as Driver });
       if (error) throw error;
       return { ...data!, id };
     },

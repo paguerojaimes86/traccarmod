@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, type CSSProperties, type FormEvent } from 'react';
 import { useCreateCalendar } from '@features/calendars/hooks/useCreateCalendar';
-import { useUpdateCalendar } from '@features/calendars/hooks/useUpdateCalendar';
 import { IconClose, IconCheck, IconUpload } from '@shared/ui/icons';
 import { generateIcsBase64, type RecurrenceFreq } from '@shared/lib/ical';
 import type { Calendar } from '@shared/api/types.models';
@@ -113,11 +112,10 @@ const recurrenceOptions = [
 
 export function CalendarForm({ open, calendar, onClose, onSuccess }: CalendarFormProps) {
   const createCalendar = useCreateCalendar();
-  const updateCalendar = useUpdateCalendar();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isEdit = !!calendar?.id;
-  const isPending = createCalendar.isPending || updateCalendar.isPending;
+  const isPending = createCalendar.isPending;
 
   const [mode, setMode] = useState<CalendarMode>('simple');
   const [name, setName] = useState('');
@@ -213,11 +211,8 @@ export function CalendarForm({ open, calendar, onClose, onSuccess }: CalendarFor
       }
 
       if (isEdit) {
-        await updateCalendar.mutateAsync({
-          id: calendar!.id!,
-          name: name.trim(),
-          data,
-        });
+        // Traccar API does not support PUT for calendars
+        throw new Error('La edición de calendarios no está soportada por esta versión de Traccar');
       } else {
         await createCalendar.mutateAsync({ name: name.trim(), data });
       }
@@ -334,9 +329,9 @@ export function CalendarForm({ open, calendar, onClose, onSuccess }: CalendarFor
             </div>
           )}
 
-          {(createCalendar.error || updateCalendar.error) && (
+          {(createCalendar.error) && (
             <div style={{ padding: '0.75rem 1rem', borderRadius: '0.625rem', backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', fontSize: '0.8125rem', marginBottom: '1rem', fontWeight: 600 }}>
-              {(createCalendar.error as Error)?.message ?? (updateCalendar.error as Error)?.message ?? 'Error al guardar'}
+              {(createCalendar.error as Error)?.message ?? 'Error al guardar'}
             </div>
           )}
 

@@ -220,7 +220,7 @@ export function MapView({ children }: { children?: ReactNode }) {
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 2px 8px rgba(15, 23, 42, 0.1)',
-            transition: 'all 0.15s',
+            transition: 'background-color 0.15s, box-shadow 0.15s',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 23, 42, 0.15)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.92)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 23, 42, 0.1)'; }}

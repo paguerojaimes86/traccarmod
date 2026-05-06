@@ -1,6 +1,5 @@
 import { useState, useEffect, type CSSProperties, type FormEvent } from 'react';
 import { useCreateOrder } from '@features/orders/hooks/useCreateOrder';
-import { useUpdateOrder } from '@features/orders/hooks/useUpdateOrder';
 import { IconClose, IconCheck } from '@shared/ui/icons';
 import type { Order } from '@shared/api/types.models';
 
@@ -112,10 +111,9 @@ const submitButton: CSSProperties = {
 
 export function OrderForm({ open, order, onClose, onSuccess }: OrderFormProps) {
   const createOrder = useCreateOrder();
-  const updateOrder = useUpdateOrder();
 
   const isEdit = !!order?.id;
-  const isPending = createOrder.isPending || updateOrder.isPending;
+  const isPending = createOrder.isPending;
 
   const [uniqueId, setUniqueId] = useState('');
   const [description, setDescription] = useState('');
@@ -153,14 +151,8 @@ export function OrderForm({ open, order, onClose, onSuccess }: OrderFormProps) {
 
     try {
       if (isEdit) {
-        await updateOrder.mutateAsync({
-          id: order!.id!,
-          uniqueId: uniqueId.trim(),
-          description: description.trim() || undefined,
-          fromAddress: fromAddress.trim() || undefined,
-          toAddress: toAddress.trim() || undefined,
-          attributes: order!.attributes ?? {},
-        } as Parameters<typeof updateOrder.mutateAsync>[0]);
+        // Traccar API does not support PUT for orders
+        throw new Error('La edición de órdenes no está soportada por esta versión de Traccar');
       } else {
         const payload: Partial<Order> = {
           uniqueId: uniqueId.trim(),
@@ -225,9 +217,9 @@ export function OrderForm({ open, order, onClose, onSuccess }: OrderFormProps) {
             />
           </div>
 
-          {(createOrder.error || updateOrder.error) && (
+          {(createOrder.error) && (
             <div style={errorStyle}>
-              {(createOrder.error as Error)?.message ?? (updateOrder.error as Error)?.message ?? 'Error al guardar la orden'}
+              {(createOrder.error as Error)?.message ?? 'Error al guardar la orden'}
             </div>
           )}
 

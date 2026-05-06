@@ -1,7 +1,7 @@
 import { useState, type CSSProperties } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePermissions } from '@shared/permissions';
-import { useNotifications, useUpdateNotification, useDeleteNotification } from '@features/notifications/hooks/useNotifications';
+import { useNotifications, useDeleteNotification } from '@features/notifications/hooks/useNotifications';
 import { NotificationTable } from '@features/alerts/components/NotificationTable';
 import { NotificationEditForm } from '@features/alerts/components/NotificationEditForm';
 import { AlertWizard } from '@features/alerts/components/AlertWizard';
@@ -47,7 +47,6 @@ const buttonStyle: CSSProperties = {
 export function AlertsPage() {
   const { canCreateAlerts, canEditAlerts, canDeleteAlerts } = usePermissions();
   const { data: notifications = [], isLoading, isError, refetch } = useNotifications();
-  const updateNotification = useUpdateNotification();
   const deleteNotification = useDeleteNotification();
   const queryClient = useQueryClient();
 
@@ -66,36 +65,6 @@ export function AlertsPage() {
     if (notification.id != null) {
       deleteNotification.mutate(notification.id);
     }
-  };
-
-  const handleToggle = (notification: Notification) => {
-    if (notification.id == null) return;
-
-    // Optimistic update: update the cache immediately
-    const queryKey = QUERY_KEYS.notifications;
-    const previousNotifications = queryClient.getQueryData<Notification[]>(queryKey);
-
-    queryClient.setQueryData<Notification[]>(queryKey, (old) =>
-      old?.map((n) =>
-        n.id === notification.id
-          ? { ...n, always: !n.always, ...(n.always ? { calendarId: 0 } : {}) }
-          : n
-      ) ?? []
-    );
-
-    updateNotification.mutate(
-      {
-        id: notification.id,
-        always: !notification.always,
-        ...(notification.always ? { calendarId: null } : {}),
-      } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      {
-        onError: () => {
-          // Rollback on error
-          queryClient.setQueryData(queryKey, previousNotifications);
-        },
-      }
-    );
   };
 
   const handleWizardSuccess = () => {
@@ -159,7 +128,6 @@ export function AlertsPage() {
         canDelete={canDeleteAlerts}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onToggle={handleToggle}
       />
 
       <AlertWizard

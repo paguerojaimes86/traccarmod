@@ -10,7 +10,7 @@ export function useUpdateMaintenance() {
     mutationFn: async ({ id, ...updates }: Partial<Maintenance> & { id: number }) => {
       const { data, error } = await apiClient.PUT('/maintenance/{id}', {
         params: { path: { id } },
-        body: updates as Maintenance,
+        body: { id, ...updates } as Maintenance,
       });
       if (error) throw error;
       return { ...data!, id };

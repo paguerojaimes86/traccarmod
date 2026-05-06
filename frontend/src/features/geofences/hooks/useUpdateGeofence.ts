@@ -8,12 +8,10 @@ export function useUpdateGeofence() {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Geofence> & { id: number }) => {
-      console.log('[useUpdateGeofence] sending PUT:', { id, updates });
       const { data, error } = await apiClient.PUT('/geofences/{id}', {
         params: { path: { id } },
-        body: updates as Geofence,
+        body: { id, ...updates } as Geofence,
       });
-      console.log('[useUpdateGeofence] server response:', { data, error });
       if (error) throw error;
       return { ...data!, id };
     },

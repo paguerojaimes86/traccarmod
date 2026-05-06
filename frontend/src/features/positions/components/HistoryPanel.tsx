@@ -124,7 +124,8 @@ const selectStyle: CSSProperties = {
   color: '#0f172a',
   fontSize: '0.8125rem',
   fontWeight: 500,
-  outline: 'none',
+  outline: '2px solid transparent',
+  outlineOffset: 2,
   cursor: 'pointer',
   transition: 'border-color 160ms ease, box-shadow 160ms ease',
 };
@@ -241,7 +242,7 @@ const speedBtnStyle = (active: boolean): CSSProperties => ({
   fontWeight: 800,
   cursor: 'pointer',
   minWidth: '2.5rem',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'background-color 0.2s, color 0.2s',
 });
 
 const mainPlayBtnStyle: CSSProperties = {
@@ -270,11 +271,9 @@ const secondaryBtnStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'all 0.2s',
+  transition: 'background-color 0.2s, color 0.2s',
   flexShrink: 0,
 };
-
-// ─── Componente ───────────────────────────────────────────────────────────
 
 interface HistoryPanelProps {
   deviceId: number | null;

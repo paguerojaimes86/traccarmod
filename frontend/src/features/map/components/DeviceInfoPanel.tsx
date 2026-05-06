@@ -60,7 +60,7 @@ const overlayStyle: CSSProperties = {
 
 const cardStyle: CSSProperties = {
   flex: 1,
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  backgroundColor: 'rgba(255, 255, 255, 0.75)',
   backdropFilter: 'blur(16px)',
   border: '1px solid rgba(15, 23, 42, 0.07)',
   borderRadius: '0.875rem',
@@ -137,7 +137,7 @@ const sensorCardStyle = (highlight: boolean, highlightColor: string): CSSPropert
   backgroundColor: highlight ? `${highlightColor}12` : 'rgba(15, 23, 42, 0.03)',
   border: '1px solid',
   borderColor: highlight ? `${highlightColor}35` : 'rgba(15, 23, 42, 0.06)',
-  transition: 'all 0.2s ease',
+  transition: 'background-color 0.2s, border-color 0.2s',
 });
 
 function InfoCard({ device, address, fixTime, isMoving, stoppedDuration, speedFormatted, followMode, onToggleFollow, onClose }: InfoCardProps) {
@@ -181,7 +181,7 @@ function InfoCard({ device, address, fixTime, isMoving, stoppedDuration, speedFo
               fontSize: '0.5875rem',
               fontWeight: 800,
               fontFamily: 'Outfit',
-              transition: 'all 0.2s ease',
+              transition: 'background-color 0.2s, border-color 0.2s, color 0.2s',
               letterSpacing: '0.02em',
             }}
             onClick={() => setShowHistory(!showHistory)}
@@ -208,7 +208,7 @@ function InfoCard({ device, address, fixTime, isMoving, stoppedDuration, speedFo
               fontSize: '0.5875rem',
               fontWeight: 800,
               fontFamily: 'Outfit',
-              transition: 'all 0.2s ease',
+              transition: 'background-color 0.2s, border-color 0.2s, color 0.2s',
               letterSpacing: '0.02em',
             }}
             onClick={onToggleFollow}
@@ -229,7 +229,7 @@ function InfoCard({ device, address, fixTime, isMoving, stoppedDuration, speedFo
               cursor: 'pointer',
               color: '#94a3b8',
               display: 'flex',
-              transition: 'all 0.2s ease',
+              transition: 'background-color 0.2s, color 0.2s',
               borderRadius: '6px',
             }}
             onClick={onClose}

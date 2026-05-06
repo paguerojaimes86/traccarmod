@@ -1,6 +1,5 @@
 import { useState, useEffect, type CSSProperties, type FormEvent } from 'react';
 import { useCreateAttribute } from '@features/attributes/hooks/useCreateAttribute';
-import { useUpdateAttribute } from '@features/attributes/hooks/useUpdateAttribute';
 import { IconClose, IconCheck } from '@shared/ui/icons';
 import type { Attribute, AttributeWithPriority } from '@shared/api/types.models';
 
@@ -129,10 +128,9 @@ const TYPE_OPTIONS = ['string', 'number', 'boolean'] as const;
 
 export function AttributeForm({ open, attribute, onClose, onSuccess }: AttributeFormProps) {
   const createAttr = useCreateAttribute();
-  const updateAttr = useUpdateAttribute();
 
   const isEdit = !!attribute?.id;
-  const isPending = createAttr.isPending || updateAttr.isPending;
+  const isPending = createAttr.isPending;
 
   const [description, setDescription] = useState('');
   const [attrKey, setAttrKey] = useState('');
@@ -175,14 +173,8 @@ export function AttributeForm({ open, attribute, onClose, onSuccess }: Attribute
 
     try {
       if (isEdit) {
-        await updateAttr.mutateAsync({
-          id: attribute!.id!,
-          description: description.trim(),
-          attribute: attrKey.trim(),
-          expression: expression.trim(),
-          type,
-          priority: Number(priority) || 0,
-        } as Parameters<typeof updateAttr.mutateAsync>[0]);
+        // Traccar API does not support PUT for computed attributes
+        throw new Error('La edición de atributos no está soportada por esta versión de Traccar');
       } else {
         const payload: Partial<Attribute> & { priority?: number } = {
           description: description.trim(),
@@ -261,9 +253,9 @@ export function AttributeForm({ open, attribute, onClose, onSuccess }: Attribute
             </div>
           </div>
 
-          {(createAttr.error || updateAttr.error) && (
+          {(createAttr.error) && (
             <div style={errorStyle}>
-              {(createAttr.error as Error)?.message ?? (updateAttr.error as Error)?.message ?? 'Error al guardar el atributo'}
+              {(createAttr.error as Error)?.message ?? 'Error al guardar el atributo'}
             </div>
           )}
 

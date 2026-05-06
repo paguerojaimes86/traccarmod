@@ -41,24 +41,6 @@ export function useCreateNotification() {
   });
 }
 
-export function useUpdateNotification() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<Notification> & { id: number }) => {
-      const { data, error } = await apiClient.PUT('/notifications/{id}', {
-        params: { path: { id } },
-        body: updates as Notification,
-      });
-      if (error) throw error;
-      return data!;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications });
-    },
-  });
-}
-
 export function useDeleteNotification() {
   const queryClient = useQueryClient();
 

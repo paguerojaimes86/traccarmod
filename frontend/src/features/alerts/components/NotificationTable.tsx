@@ -14,7 +14,7 @@ interface NotificationTableProps {
   canDelete: boolean;
   onEdit: (notification: Notification) => void;
   onDelete: (notification: Notification) => void;
-  onToggle: (notification: Notification) => void;
+  onToggle?: (notification: Notification) => void;
 }
 
 const PAGE_SIZE = 10;
@@ -378,8 +378,8 @@ export function NotificationTable({
                         ...toggleTrackStyle(!!notification.always),
                         ...(canEdit ? {} : { opacity: 0.5, cursor: 'not-allowed' }),
                       }}
-                      onClick={canEdit ? () => onToggle(notification) : undefined}
-                      title={canEdit ? (notification.always ? 'Cambiar a Programado' : 'Cambiar a Siempre') : 'Sin permisos para editar'}
+                      onClick={canEdit && onToggle ? () => onToggle(notification) : undefined}
+                      title={canEdit && onToggle ? (notification.always ? 'Cambiar a Programado' : 'Cambiar a Siempre') : 'Toggle no soportado en esta versión de Traccar'}
                       aria-label={notification.always ? 'Desactivar siempre' : 'Activar siempre'}
                       disabled={!canEdit}
                     >

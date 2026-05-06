@@ -26,7 +26,7 @@ const sidebarStyle: CSSProperties = {
   flexDirection: 'column',
   borderRadius: '1rem',
   overflow: 'hidden',
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  backgroundColor: 'rgba(255, 255, 255, 0.75)',
   backdropFilter: 'blur(16px)',
   border: '1px solid rgba(15, 23, 42, 0.06)',
   boxShadow: '0 8px 32px rgba(15, 23, 42, 0.08)',
@@ -47,8 +47,9 @@ const searchInputStyle: CSSProperties = {
   fontSize: '0.8125rem',
   fontWeight: 500,
   fontFamily: 'Outfit, sans-serif',
-  outline: 'none',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  outline: '2px solid transparent',
+  outlineOffset: 2,
+  transition: 'border-color 0.2s, background-color 0.2s, outline-color 0.15s',
 };
 
 const listStyle: CSSProperties = {
@@ -69,7 +70,7 @@ const toggleButtonStyle: CSSProperties = {
   padding: '0.5rem 0.875rem',
   borderRadius: '0.875rem',
   border: '1px solid rgba(15, 23, 42, 0.08)',
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  backgroundColor: 'rgba(255, 255, 255, 0.75)',
   backdropFilter: 'blur(12px)',
   color: '#0f172a',
   fontSize: '0.8125rem',
@@ -80,7 +81,7 @@ const toggleButtonStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: '0.5rem',
-  transition: 'all 0.2s ease',
+  transition: 'background-color 0.2s, box-shadow 0.2s',
 };
 
 function FilterCard({ label, count, color, icon, isActive, onClick }: { label: string, count: number, color: string, icon: ReactNode, isActive: boolean, onClick: () => void }) {
@@ -106,7 +107,7 @@ function FilterCard({ label, count, color, icon, isActive, onClick }: { label: s
         alignItems: 'center',
         justifyContent: 'center',
         gap: '0.375rem',
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s',
         boxShadow: isActive ? `0 0 16px -6px ${color}` : 'none',
         flex: 1,
       }}
@@ -236,7 +237,7 @@ export function DeviceList() {
                 cursor: 'pointer',
                 color: '#6366f1',
                 display: 'flex',
-                transition: 'all 0.2s ease',
+                transition: 'background-color 0.2s, border-color 0.2s',
               }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.1)'; e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.03)'; e.currentTarget.style.borderColor = 'rgba(15, 23, 42, 0.06)'; }}
@@ -253,7 +254,7 @@ export function DeviceList() {
                 cursor: 'pointer',
                 color: '#94a3b8',
                 display: 'flex',
-                transition: 'all 0.2s ease',
+                transition: 'background-color 0.2s, color 0.2s',
               }}
               onClick={toggleSidebar}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.06)'; e.currentTarget.style.color = '#0f172a'; }}

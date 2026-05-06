@@ -25,7 +25,7 @@ const itemStyle = (isSelected: boolean, isHovered: boolean): CSSProperties => ({
   backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.1)' : isHovered ? 'rgba(15, 23, 42, 0.03)' : 'transparent',
   border: '1px solid',
   borderColor: isSelected ? 'rgba(99, 102, 241, 0.25)' : 'transparent',
-  transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'background-color 0.18s, border-color 0.18s, box-shadow 0.18s',
   boxShadow: isSelected ? '0 0 14px -5px rgba(99, 102, 241, 0.25)' : 'none',
 });
 
@@ -89,7 +89,7 @@ export function DeviceListItem({ device, position, isSelected }: DeviceListItemP
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
-          transition: 'all 0.18s ease',
+          transition: 'background-color 0.18s, border-color 0.18s, color 0.18s',
         }}>
           <IconMap size={15} />
         </div>
