@@ -15,12 +15,16 @@ const containerStyle: CSSProperties = {
 
 export function AlertToastContainer() {
   const recentEvents = useAlertStore((s) => s.recentEvents);
+  const dismissedEventIds = useAlertStore((s) => s.dismissedEventIds);
+  const dismissEvent = useAlertStore((s) => s.dismissEvent);
   const [visibleIds, setVisibleIds] = useState<Set<number>>(new Set());
   const [exitingIds, setExitingIds] = useState<Set<number>>(new Set());
 
-  // Show only the last 5 events as toasts. When new events arrive that we
-  // haven't shown yet, add them to the visible set.
-  const latestEvents = useMemo(() => recentEvents.slice(0, 5), [recentEvents]);
+  // Show only the last 5 events that haven't been dismissed yet
+  const latestEvents = useMemo(
+    () => recentEvents.filter((e) => !dismissedEventIds.includes(e.id)).slice(0, 5),
+    [recentEvents, dismissedEventIds],
+  );
 
   useEffect(() => {
     setVisibleIds((prev) => {
@@ -37,6 +41,7 @@ export function AlertToastContainer() {
   }, [latestEvents]);
 
   const dismissToast = (id: number) => {
+    dismissEvent(id); // persist to localStorage so refresh doesn't re-show it
     setExitingIds((prev) => new Set(prev).add(id));
     setTimeout(() => {
       setVisibleIds((prev) => {
