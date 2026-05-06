@@ -184,6 +184,31 @@ export function AlertConfig({ type, config, onChange }: AlertConfigProps) {
         </div>
       )}
 
+      {requirements.needsFuelThreshold && (
+        <div style={fieldGroupStyle}>
+          <label style={labelStyle}>Umbral de Combustible</label>
+          <input
+            type="number"
+            style={sharedInputStyle}
+            placeholder="Ej: 10"
+            value={config.fuelThreshold ?? ''}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              if (!v || v <= 0) {
+                onChange({ fuelThreshold: undefined });
+                return;
+              }
+              onChange({ fuelThreshold: Math.round(v * 10) / 10 });
+            }}
+            min={0.1}
+            max={10000}
+          />
+          <p style={helperTextStyle}>
+            Cambio mínimo en el nivel de combustible para disparar la alerta (litros / % según el dispositivo)
+          </p>
+        </div>
+      )}
+
       {requirements.needsAlarmSubtype && (
         <div style={fieldGroupStyle}>
           <label style={labelStyle}>Subtipo de Alarma</label>

@@ -11,6 +11,7 @@ export interface TypeConfig {
   configRequirements: {
     needsGeofence?: boolean;
     needsSpeedLimit?: boolean;
+    needsFuelThreshold?: boolean;
     needsAlarmSubtype?: boolean;
     needsMaintenanceId?: boolean;
     needsDriverId?: boolean;
@@ -194,7 +195,7 @@ export const ALERT_TYPE_CONFIG: Record<string, TypeConfig> = {
     color: '#ef4444',
     severity: 'high',
     category: 'other',
-    configRequirements: {},
+    configRequirements: { needsFuelThreshold: true },
   },
   deviceFuelIncrease: {
     type: 'deviceFuelIncrease',
@@ -204,7 +205,7 @@ export const ALERT_TYPE_CONFIG: Record<string, TypeConfig> = {
     color: '#10b981',
     severity: 'info',
     category: 'other',
-    configRequirements: {},
+    configRequirements: { needsFuelThreshold: true },
   },
 
   // Media (1)
@@ -291,6 +292,7 @@ export function validateAlertConfig(
   const checks: { flag: keyof typeof requirements; field: keyof AlertWizardConfig; message: string }[] = [
     { flag: 'needsGeofence', field: 'geofenceId', message: 'Selecciona una geozona' },
     { flag: 'needsSpeedLimit', field: 'speedLimit', message: 'Ingresa un límite de velocidad' },
+    { flag: 'needsFuelThreshold', field: 'fuelThreshold', message: 'Ingresa un umbral de combustible' },
     { flag: 'needsAlarmSubtype', field: 'alarmSubtype', message: 'Selecciona un subtipo de alarma' },
     { flag: 'needsMaintenanceId', field: 'maintenanceId', message: 'Selecciona un mantenimiento' },
     { flag: 'needsDriverId', field: 'driverId', message: 'Selecciona un conductor' },
@@ -327,6 +329,7 @@ export interface AlertWizardConfig {
   type: string;
   geofenceId?: number;
   speedLimit?: number; // in knots for the API
+  fuelThreshold?: number; // minimum fuel change in device units (e.g. liters or %)
   alarmSubtype?: string;
   maintenanceId?: number;
   driverId?: number;

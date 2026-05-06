@@ -304,6 +304,10 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
 
       const attributes: Record<string, unknown> = {};
       if (config.speedLimit) attributes.speedLimit = config.speedLimit;
+      if (config.fuelThreshold) {
+        attributes.fuelDropThreshold = config.fuelThreshold;
+        attributes.fuelIncreaseThreshold = config.fuelThreshold;
+      }
       if (config.alarmSubtype) attributes.alarmType = config.alarmSubtype;
       if (config.geofenceId) attributes.geofenceId = config.geofenceId;
 
@@ -330,25 +334,42 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
           devices: config.deviceIds.length,
         });
 
-        // Traccar reads speedLimit from DEVICE attributes (not notification)
-        // See OverspeedEventHandler.java — KeyType: SERVER, DEVICE
+         // Traccar reads some configs from DEVICE attributes (not notification)
+        // See OverspeedEventHandler.java, FuelEventHandler.java — KeyType: SERVER, DEVICE
+        const deviceAttrUpdates: Array<{ deviceId: number; key: string; value: number }> = [];
+
         if (config.type === 'deviceOverspeed' && config.speedLimit) {
-          alertsDebug('wizard', 'setting speedLimit on device attributes', {
-            devices: config.deviceIds.length,
-            speedLimit: config.speedLimit,
-          });
+          for (const deviceId of config.deviceIds) {
+            deviceAttrUpdates.push({ deviceId, key: 'speedLimit', value: config.speedLimit });
+          }
+        }
+
+        if (config.type === 'deviceFuelDrop' && config.fuelThreshold) {
+          for (const deviceId of config.deviceIds) {
+            deviceAttrUpdates.push({ deviceId, key: 'fuelDropThreshold', value: config.fuelThreshold });
+          }
+        }
+
+        if (config.type === 'deviceFuelIncrease' && config.fuelThreshold) {
+          for (const deviceId of config.deviceIds) {
+            deviceAttrUpdates.push({ deviceId, key: 'fuelIncreaseThreshold', value: config.fuelThreshold });
+          }
+        }
+
+        if (deviceAttrUpdates.length > 0) {
+          alertsDebug('wizard', 'setting device attributes', { updates: deviceAttrUpdates.length });
           await Promise.allSettled(
-            config.deviceIds.map(async (deviceId) => {
+            deviceAttrUpdates.map(async ({ deviceId, key, value }) => {
               const device = allDevices.find((d) => d.id === deviceId);
               if (!device) return;
               await updateDevice.mutateAsync({
                 id: deviceId,
                 ...device,
-                attributes: { ...device.attributes, speedLimit: config.speedLimit! },
+                attributes: { ...device.attributes, [key]: value },
               });
             })
           );
-          alertsDebug('wizard', 'speedLimit set on all devices');
+          alertsDebug('wizard', 'device attributes updated');
         }
       }
 
@@ -382,6 +403,7 @@ export function AlertWizard({ open, onClose, onSuccess }: AlertWizardProps) {
     summaryItems.push({ label: 'Geozona', value: geoName });
   }
   if (config.speedLimit) summaryItems.push({ label: 'Límite velocidad', value: `${config.speedLimit} kn` });
+  if (config.fuelThreshold) summaryItems.push({ label: 'Umbral combustible', value: String(config.fuelThreshold) });
   if (config.alarmSubtype) summaryItems.push({ label: 'Alarma', value: config.alarmSubtype });
   summaryItems.push({ label: 'Dispositivos', value: `${config.deviceIds.length} seleccionado(s)` });
   summaryItems.push({

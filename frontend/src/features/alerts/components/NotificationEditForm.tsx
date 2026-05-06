@@ -258,6 +258,7 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
   const [always, setAlways] = useState(true);
   const [description, setDescription] = useState('');
   const [speedLimit, setSpeedLimit] = useState<string>('');
+  const [fuelThreshold, setFuelThreshold] = useState<string>('');
   const [alarmSubtype, setAlarmSubtype] = useState<string>('');
   const [geofenceId, setGeofenceId] = useState<string>('');
   const [initialGeofenceId, setInitialGeofenceId] = useState<string>('');
@@ -274,6 +275,8 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
       setDescription(notification.description ?? '');
       const attrs = (notification.attributes ?? {}) as Record<string, unknown>;
       setSpeedLimit(attrs.speedLimit != null ? String(attrs.speedLimit) : '');
+      setFuelThreshold(attrs.fuelDropThreshold != null ? String(attrs.fuelDropThreshold)
+        : attrs.fuelIncreaseThreshold != null ? String(attrs.fuelIncreaseThreshold) : '');
       setAlarmSubtype((attrs.alarmType as string) ?? '');
       const currentGeofenceId = attrs.geofenceId != null ? String(attrs.geofenceId) : '';
       setGeofenceId(currentGeofenceId);
@@ -342,6 +345,13 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
     if (typeConfig?.configRequirements?.needsSpeedLimit && speedLimit) {
       attributes.speedLimit = Number(speedLimit);
     }
+    if (typeConfig?.configRequirements?.needsFuelThreshold && fuelThreshold) {
+      if (notification.type === 'deviceFuelDrop') {
+        attributes.fuelDropThreshold = Number(fuelThreshold);
+      } else if (notification.type === 'deviceFuelIncrease') {
+        attributes.fuelIncreaseThreshold = Number(fuelThreshold);
+      }
+    }
     if (typeConfig?.configRequirements?.needsAlarmSubtype && alarmSubtype) {
       attributes.alarmType = alarmSubtype;
     }
@@ -382,17 +392,29 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
       }
     }
 
-    // Traccar reads speedLimit from DEVICE attributes (not notification)
-    if (notification.type === 'deviceOverspeed' && speedLimit && linkedDeviceIds.length > 0) {
+    // Traccar reads some configs from DEVICE attributes (not notification)
+    const deviceAttrUpdates: Array<{ key: string; value: number }> = [];
+    if (notification.type === 'deviceOverspeed' && speedLimit) {
+      deviceAttrUpdates.push({ key: 'speedLimit', value: Number(speedLimit) });
+    }
+    if (notification.type === 'deviceFuelDrop' && fuelThreshold) {
+      deviceAttrUpdates.push({ key: 'fuelDropThreshold', value: Number(fuelThreshold) });
+    }
+    if (notification.type === 'deviceFuelIncrease' && fuelThreshold) {
+      deviceAttrUpdates.push({ key: 'fuelIncreaseThreshold', value: Number(fuelThreshold) });
+    }
+    if (deviceAttrUpdates.length > 0 && linkedDeviceIds.length > 0) {
       Promise.allSettled(
-        linkedDeviceIds.map(async (deviceId) => {
+        linkedDeviceIds.flatMap((deviceId) => {
           const device = allDevices.find((d) => d.id === deviceId);
-          if (!device) return;
-          await updateDevice.mutateAsync({
-            id: deviceId,
-            ...device,
-            attributes: { ...device.attributes, speedLimit: Number(speedLimit) },
-          });
+          if (!device) return [];
+          return deviceAttrUpdates.map(({ key, value }) =>
+            updateDevice.mutateAsync({
+              id: deviceId,
+              ...device,
+              attributes: { ...device.attributes, [key]: value },
+            })
+          );
         })
       ).catch(() => {});
     }
@@ -581,6 +603,28 @@ export function NotificationEditForm({ open, notification, onClose, onSuccess }:
               }}
               min={1}
               max={500}
+            />
+          </div>
+        )}
+
+        {typeConfig?.configRequirements?.needsFuelThreshold && (
+          <div style={sectionStyle}>
+            <span style={labelStyle}>Umbral de Combustible</span>
+            <input
+              type="number"
+              style={inputStyle}
+              placeholder="Ej: 10"
+              value={fuelThreshold ?? ''}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                if (!v || v <= 0) {
+                  setFuelThreshold('');
+                  return;
+                }
+                setFuelThreshold(String(Math.round(v * 10) / 10));
+              }}
+              min={0.1}
+              max={10000}
             />
           </div>
         )}
